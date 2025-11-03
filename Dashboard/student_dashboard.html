@@ -1,0 +1,1063 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EduSync AI — Student Dashboard</title>
+    <!-- Load Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Custom font import for modern look */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
+        
+        /* Apply Inter font */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f7f9fc; /* Light, calming background */
+            color: #333;
+        }
+
+        /* Utility for Active Sidebar Link (Light Mode Default) */
+        .sidebar-link.active {
+            background-color: #e0e7ff; /* Indigo-100 */
+            color: #4f46e5; /* Indigo-600 */
+            font-weight: 600;
+            border-left-color: #4f46e5;
+        }
+        /* Utility for Active Sidebar Link (Dark Mode Override) */
+        .sidebar-link.dark-active {
+            background-color: #4338CA !important; /* Indigo-700 */
+            color: #ffffff !important;
+            border-left-color: #818CF8 !important; /* Indigo-300 */
+        }
+
+        /* Hide scrollbar for aesthetic purposes */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;  /* IE and Edge */
+            scrollbar-width: none;  /* Firefox */
+        }
+
+        /* Custom toggle switch styling */
+        .toggle-checkbox:checked {
+            right: 0;
+            background-color: #4f46e5; /* Indigo-600 */
+        }
+        .toggle-checkbox:checked + .toggle-label {
+            background-color: #a5b4fc; /* Indigo-300 */
+        }
+        
+        /* Utility classes for complex dark mode swaps */
+        .card-light {
+            background-color: white;
+            color: #333;
+        }
+        .card-dark {
+            background-color: #374151; /* gray-700 */
+            color: #d1d5db; /* gray-300 */
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col transition-colors duration-300">
+
+    <!-- Mobile Sidebar Toggle -->
+    <div id="mobile-sidebar-backdrop" class="fixed inset-0 bg-gray-900 bg-opacity-50 z-40 hidden md:hidden" onclick="toggleSidebar()"></div>
+
+    <!-- Sidebar Navigation Menu -->
+    <aside id="sidebar" class="fixed top-0 left-0 h-full w-64 bg-white shadow-xl z-50 transform -translate-x-full md:translate-x-0 transition-transform duration-300 flex flex-col border-r border-indigo-200">
+        <div class="p-6 border-b border-indigo-200">
+            <h1 class="text-2xl font-extrabold text-indigo-600 flex items-center">
+                <!-- AI Icon -->
+                <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-4 1 5-2 1-4zm-9.75 3h14v-2h-14v2zM12 10a5 5 0 110 10a5 5 0 010-10z"></path></svg>
+                EduSync AI
+            </h1>
+        </div>
+        
+        <nav class="flex-grow p-4 space-y-2 no-scrollbar overflow-y-auto">
+            <a href="#overview" class="sidebar-link active block px-4 py-3 rounded-xl flex items-center space-x-3 text-gray-700 hover:bg-indigo-50 border-l-4 border-transparent transition duration-150">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3"></path></svg>
+                <span>Dashboard Overview</span>
+            </a>
+            <a href="#assignments" class="sidebar-link block px-4 py-3 rounded-xl flex items-center space-x-3 text-gray-700 hover:bg-indigo-50 border-l-4 border-transparent transition duration-150">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.208 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.792 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.792 5 16.5 5s3.332.477 4.5 1.253v13C19.832 18.477 18.208 18 16.5 18s-3.332.477-4.5 1.253"></path></svg>
+                <span>Assignments</span>
+            </a>
+            <a href="#edubot" class="sidebar-link block px-4 py-3 rounded-xl flex items-center space-x-3 text-gray-700 hover:bg-indigo-50 border-l-4 border-transparent transition duration-150">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9h-3M8 9v6m-4 3h16a2 2 0 002-2v-4a2 2 0 00-2-2H4a2 2 0 00-2 2v4a2 2 0 002 2z"></path></svg>
+                <span>AI Study Assistant</span>
+            </a>
+            <a href="#notes" class="sidebar-link block px-4 py-3 rounded-xl flex items-center space-x-3 text-gray-700 hover:bg-indigo-50 border-l-4 border-transparent transition duration-150">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m-5-4V8h4l-2-2-2 2h-4v4zm5 4v-4m-4 4h4a2 2 0 002-2v-8a2 2 0 00-2-2h-4a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
+                <span>Notes Summarizer</span>
+            </a>
+            <a href="#analytics" class="sidebar-link block px-4 py-3 rounded-xl flex items-center space-x-3 text-gray-700 hover:bg-indigo-50 border-l-4 border-transparent transition duration-150">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 8v8m-4-5v5m-4-2v2m4-2a2 2 0 01-2 2H6a2 2 0 01-2-2V6a2 2 0 012-2h4a2 2 0 012 2v10z"></path></svg>
+                <span>Performance Analytics</span>
+            </a>
+            <a href="#timetable" class="sidebar-link block px-4 py-3 rounded-xl flex items-center space-x-3 text-gray-700 hover:bg-indigo-50 border-l-4 border-transparent transition duration-150">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                <span>Timetable / Calendar</span>
+            </a>
+            <a href="#settings" class="sidebar-link block px-4 py-3 rounded-xl flex items-center space-x-3 text-gray-700 hover:bg-indigo-50 border-l-4 border-transparent transition duration-150">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317C10.73 3.633 11.52 3.633 11.925 4.317L14.47 8.573a1 1 0 00.817.466h4.55a1 1 0 01.908 1.45L18.15 17.584a1 1 0 01-.817.466h-4.55a1 1 0 00-.817.466L10.325 21.683c-.405.684-1.195.684-1.6 0L5.78 17.584a1 1 0 00-.817-.466H.413a1 1 0 01-.908-1.45L3.85 9.04a1 1 0 01.817-.466h4.55a1 1 0 00.817-.466l1.625-3.25z"></path></svg>
+                <span>Settings / Profile</span>
+            </a>
+        </nav>
+        
+        <div class="p-6 border-t border-gray-200">
+            <button onclick="handleLogout()" class="w-full py-2 bg-red-100 text-red-600 font-semibold rounded-xl flex items-center justify-center hover:bg-red-200 transition duration-150">
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
+                Logout
+            </button>
+        </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <div class="flex-1 md:ml-64 flex flex-col transition-all duration-300">
+        
+        <!-- Dashboard Header -->
+        <header id="dashboard-header" class="sticky top-0 z-30 bg-white/95 backdrop-blur-sm shadow-md p-4 flex items-center justify-between transition-colors duration-300">
+            <div class="flex items-center">
+                <!-- Mobile Menu Button -->
+                <button class="md:hidden mr-4 text-gray-600 hover:text-indigo-600" onclick="toggleSidebar()">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+                </button>
+                <h2 id="welcome-text" class="text-xl font-bold text-gray-800">Welcome back, Krutika 👋</h2>
+            </div>
+
+            <div class="flex items-center space-x-4">
+                
+                <!-- Date/Time Display -->
+                <span id="current-datetime" class="hidden sm:inline text-sm text-gray-500 font-medium"></span>
+                
+                <!-- Class Info -->
+                <span class="hidden sm:inline text-sm bg-indigo-100 text-indigo-700 px-3 py-1 rounded-full font-semibold">
+                    Class: XII | Section: A
+                </span>
+                
+                <!-- Status Indicator (Online/Offline) -->
+                <div id="status-indicator" class="flex items-center text-sm font-medium">
+                    <!-- JS will update the text and dot color -->
+                </div>
+                
+                <!-- Notification Icon -->
+                <button id="notif-button" class="relative p-2 text-gray-600 bg-gray-100 rounded-full hover:bg-indigo-100 hover:text-indigo-600 transition">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path></svg>
+                    <!-- New notifications badge -->
+                    <span class="absolute top-0 right-0 block h-3 w-3 rounded-full ring-2 ring-white bg-red-500"></span>
+                </button>
+                
+                <!-- Profile Photo -->
+                <img src="https://placehold.co/40x40/6366f1/ffffff?text=K" alt="Krutika Chincholkar Profile" class="w-10 h-10 rounded-full object-cover border-2 border-indigo-400">
+            </div>
+        </header>
+
+        <!-- Main Content Sections (Scrollable) -->
+        <main class="p-6 md:p-8 space-y-10 flex-1">
+            
+            <!-- 1. Dashboard Overview -->
+            <section id="overview" class="active-section">
+                <h3 class="text-3xl font-extrabold text-gray-800 mb-6">Dashboard Overview</h3>
+
+                <!-- Progress Summary Cards -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    
+                    <!-- Card 1: Average Grade -->
+                    <div class="content-card bg-white p-6 rounded-2xl shadow-lg border border-indigo-100 transition hover:shadow-xl">
+                        <p class="text-sm text-gray-500 mb-1">Average Grade</p>
+                        <div class="flex items-center justify-between">
+                            <span class="text-4xl font-bold text-indigo-600">85%</span>
+                            <div class="w-16 h-16 rounded-full bg-indigo-50 flex items-center justify-center font-bold text-indigo-600">
+                                📚
+                            </div>
+                        </div>
+                        <p class="text-xs text-green-500 mt-2">+2% from last month</p>
+                    </div>
+
+                    <!-- Card 2: Attendance -->
+                    <div class="content-card bg-white p-6 rounded-2xl shadow-lg border border-teal-100 transition hover:shadow-xl">
+                        <p class="text-sm text-gray-500 mb-1">Attendance</p>
+                        <div class="flex items-center justify-between">
+                            <span class="text-4xl font-bold text-teal-600">92%</span>
+                            <div class="w-16 h-16 rounded-full bg-teal-50 flex items-center justify-center font-bold text-teal-600">
+                                📅
+                            </div>
+                        </div>
+                        <p class="text-xs text-gray-500 mt-2">18 days present this month</p>
+                    </div>
+
+                    <!-- Card 3: Assignments Completed -->
+                    <div class="content-card bg-white p-6 rounded-2xl shadow-lg border border-yellow-100 transition hover:shadow-xl">
+                        <p class="text-sm text-gray-500 mb-1">Assignments Completed</p>
+                        <div class="flex items-center justify-between">
+                            <span class="text-4xl font-bold text-yellow-600">18 / 20</span>
+                            <div class="w-16 h-16 rounded-full bg-yellow-50 flex items-center justify-center font-bold text-yellow-600">
+                                📝
+                            </div>
+                        </div>
+                        <p class="text-xs text-orange-500 mt-2">2 pending submissions</p>
+                    </div>
+
+                    <!-- Card 4: AI Insights -->
+                    <div class="content-card bg-white p-6 rounded-2xl shadow-lg border border-pink-100 transition hover:shadow-xl">
+                        <p class="text-sm text-gray-500 mb-1">AI Insight</p>
+                        <p class="text-lg font-semibold text-gray-700 mt-1">"You're improving in **Math**! Keep it up!"</p>
+                        <button class="text-xs text-pink-600 mt-4 underline font-medium">View detailed analysis</button>
+                    </div>
+                </div>
+
+                <!-- Quick Actions Panel -->
+                <div class="content-card mt-8 bg-indigo-50 p-6 rounded-2xl border border-indigo-200">
+                    <h4 class="text-lg font-semibold text-indigo-700 mb-4">Quick Actions</h4>
+                    <div class="flex flex-wrap gap-4">
+                        <button class="px-4 py-2 bg-indigo-600 text-white rounded-xl shadow-md hover:bg-indigo-700 transition" onclick="showSection('edubot')">
+                            Ask EduBot
+                        </button>
+                        <button class="px-4 py-2 bg-white text-indigo-600 border border-indigo-300 rounded-xl shadow-md hover:bg-indigo-100 transition" onclick="showSection('assignments')">
+                            Upload Assignment
+                        </button>
+                        <button class="px-4 py-2 bg-white text-indigo-600 border border-indigo-300 rounded-xl shadow-md hover:bg-indigo-100 transition" onclick="showSection('notes')">
+                            Summarize Notes
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 2. Assignments Section -->
+            <section id="assignments" class="hidden active-section">
+                <h3 class="text-3xl font-extrabold text-gray-800 mb-6">📚 Assignments</h3>
+
+                <div class="content-card bg-white p-6 rounded-2xl shadow-lg space-y-6">
+                    <h4 class="text-xl font-semibold text-gray-700">Active Assignments</h4>
+                    
+                    <!-- Filter and List -->
+                    <div class="flex justify-between items-center mb-4">
+                        <select class="p-2 border rounded-lg text-sm">
+                            <option>Upcoming</option>
+                            <option>Completed</option>
+                            <option>Late</option>
+                        </select>
+                    </div>
+
+                    <!-- Assignment Table (Mock) -->
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Subject</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Topic</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Deadline</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-200">
+                                <tr>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">Chemistry</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Stoichiometry Lab Report</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Oct 15, 2025</td>
+                                    <td class="px-6 py-4 whitespace-nowrap"><span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">Pending</span></td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium"><button class="text-indigo-600 hover:text-indigo-900" onclick="document.getElementById('file-upload').click()">Upload</button></td>
+                                </tr>
+                                <tr>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">History</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">WWII Essay Draft</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Oct 20, 2025</td>
+                                    <td class="px-6 py-4 whitespace-nowrap"><span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">Pending</span></td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium"><button class="text-indigo-600 hover:text-indigo-900" onclick="document.getElementById('file-upload').click()">Upload</button></td>
+                                </tr>
+                                <tr>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">Physics</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Kinematics Problem Set</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Oct 5, 2025</td>
+                                    <td class="px-6 py-4 whitespace-nowrap"><span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">Completed</span></td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium"><span class="text-gray-400">View Grade</span></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- File Upload & AI Feedback Mock -->
+                    <div class="mt-8 pt-6 border-t border-gray-100">
+                        <h4 class="text-xl font-semibold text-gray-700 mb-4">Submit Assignment</h4>
+                        <div id="drop-area" class="border-2 border-dashed border-indigo-300 p-10 rounded-xl text-center bg-indigo-50 hover:bg-indigo-100 transition cursor-pointer">
+                            <p class="text-gray-600 mb-2">Drag & Drop file here or click to browse</p>
+                            <p class="text-xs text-gray-400">PDF, DOCX, ZIP (Max 10MB)</p>
+                            <input type="file" id="file-upload" class="hidden" onchange="handleFileUpload(event)">
+                        </div>
+                        
+                        <div id="ai-feedback-box" class="mt-4 p-4 bg-yellow-100 text-yellow-800 rounded-lg hidden">
+                            <p class="font-semibold mb-1">🤖 AI Feedback (Mock)</p>
+                            <p id="ai-feedback-message" class="text-sm"></p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 3. AI Study Assistant (EduBot) -->
+            <section id="edubot" class="hidden active-section">
+                <h3 class="text-3xl font-extrabold text-gray-800 mb-6">🧠 AI Study Assistant (EduBot)</h3>
+
+                <div class="content-card bg-white flex flex-col h-[60vh] rounded-2xl shadow-lg border border-indigo-100">
+                    <!-- Chat History -->
+                    <div id="chatbot-history" class="flex-grow p-6 overflow-y-auto space-y-4 no-scrollbar">
+                        <!-- Initial Bot Message -->
+                        <div class="flex justify-start">
+                            <div id="initial-bot-message" class="bg-indigo-100 text-indigo-900 p-3 rounded-xl rounded-tl-none max-w-xs md:max-w-md shadow-sm">
+                                Hello Krutika! I'm EduBot. Ask me about any topic, practice questions, or summaries!
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Input Area -->
+                    <form id="chatbot-form" class="p-4 border-t border-gray-200 flex space-x-3">
+                        <input type="text" id="chatbot-input" placeholder="Explain Newton's First Law..." required
+                               class="flex-grow p-3 rounded-xl border border-gray-300 focus:ring-indigo-500 focus:border-indigo-500">
+                        <button type="submit" class="p-3 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14M12 5l7 7-7 7"></path></svg>
+                        </button>
+                    </form>
+                </div>
+            </section>
+            
+            <!-- 4. Notes Summarizer -->
+            <section id="notes" class="hidden active-section">
+                <h3 class="text-3xl font-extrabold text-gray-800 mb-6">📝 Notes Summarizer</h3>
+
+                <div class="content-card bg-white p-6 rounded-2xl shadow-lg space-y-6">
+                    <h4 class="text-xl font-semibold text-gray-700">Upload or Paste Notes for AI Summary</h4>
+                    
+                    <textarea id="notes-input" rows="8" placeholder="Paste your lecture notes or text here..."
+                        class="w-full p-4 rounded-xl border border-gray-300 focus:ring-indigo-500 focus:border-indigo-500"></textarea>
+
+                    <div class="flex items-center space-x-4">
+                        <label class="text-sm font-medium text-gray-700">Summary Length:</label>
+                        <select id="summary-length" class="p-2 border rounded-lg text-sm focus:ring-indigo-500 focus:border-indigo-500">
+                            <option value="short">Short (3 points)</option>
+                            <option value="medium">Medium (5 points)</option>
+                            <option value="detailed">Detailed (Paragraphs)</option>
+                        </select>
+                        <button onclick="generateSummary()" class="px-6 py-2 bg-indigo-600 text-white font-semibold rounded-xl hover:bg-indigo-700 transition">
+                            Generate Summary
+                        </button>
+                    </div>
+
+                    <div id="summary-output" class="mt-6 p-4 border border-green-300 bg-green-50 rounded-lg hidden">
+                        <p class="font-semibold text-green-800 mb-2">✅ AI Summary:</p>
+                        <pre id="summary-text" class="whitespace-pre-wrap text-sm text-green-900"></pre>
+                        <button class="text-xs text-indigo-600 mt-3 underline" onclick="copyToClipboard('summary-text')">Copy to Clipboard</button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 5. Performance Analytics (Mock Chart) -->
+            <section id="analytics" class="hidden active-section">
+                <h3 class="text-3xl font-extrabold text-gray-800 mb-6">📈 Performance Analytics</h3>
+                
+                <div class="grid lg:grid-cols-2 gap-6">
+                    <div class="content-card bg-white p-6 rounded-2xl shadow-lg">
+                        <h4 class="text-xl font-semibold text-gray-700 mb-4">Grades Trend Over Time</h4>
+                        <!-- Mock chart area - in a real app, this would be a canvas with Chart.js -->
+                        <div id="chart-mock-1" class="bg-gray-50 h-64 flex items-center justify-center rounded-lg border border-gray-200 text-gray-500">
+                            [Mock Line Graph: Grades Q1-Q3]
+                        </div>
+                    </div>
+                    
+                    <div class="content-card bg-white p-6 rounded-2xl shadow-lg">
+                        <h4 class="text-xl font-semibold text-gray-700 mb-4">Subject-wise Performance</h4>
+                        <!-- Mock chart area -->
+                        <div id="chart-mock-2" class="bg-gray-50 h-64 flex items-center justify-center rounded-lg border border-gray-200 text-gray-500">
+                            [Mock Pie Chart: Subject Breakdown]
+                        </div>
+                    </div>
+                </div>
+
+                <div class="p-4 bg-pink-100 text-pink-800 rounded-xl border border-pink-300">
+                    <p class="font-semibold">🎯 AI Suggestion:</p>
+                    <p class="text-sm">Your performance in Physics dropped by 12% last month. Try the 'AI Study Assistant' for targeted practice questions on Kinematics.</p>
+                </div>
+            </section>
+
+            <!-- 6. Timetable / Calendar -->
+            <section id="timetable" class="hidden active-section">
+                <h3 class="text-3xl font-extrabold text-gray-800 mb-6">📅 Timetable & Deadlines</h3>
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    
+                    <!-- Daily Schedule (Timetable) -->
+                    <div class="content-card lg:col-span-2 bg-white p-6 rounded-2xl shadow-lg">
+                        <h4 class="text-xl font-semibold text-gray-700 mb-4 flex justify-between items-center">
+                            Today's Schedule (Tuesday)
+                            <span class="text-sm text-indigo-500 font-medium">Week 42</span>
+                        </h4>
+                        
+                        <div class="space-y-3">
+                            <!-- Mock Class Entry (Indigo 50) -->
+                            <div class="flex items-center space-x-4 p-3 bg-indigo-50 rounded-xl border-l-4 border-indigo-500 timetable-row">
+                                <span class="text-sm font-bold text-gray-600 w-20 timetable-time">08:30 - 09:30</span>
+                                <div>
+                                    <p class="font-medium text-gray-900 timetable-subject">Mathematics</p>
+                                    <p class="text-xs text-indigo-600">Topic: Calculus Integrals</p>
+                                </div>
+                            </div>
+
+                            <!-- Mock Class Entry (White) -->
+                            <div class="flex items-center space-x-4 p-3 bg-white rounded-xl border-l-4 border-green-500 shadow-sm timetable-row">
+                                <span class="text-sm font-bold text-gray-600 w-20 timetable-time">09:30 - 10:30</span>
+                                <div>
+                                    <p class="font-medium text-gray-900 timetable-subject">Physics</p>
+                                    <p class="text-xs text-green-600">Topic: Quantum Mechanics Intro</p>
+                                </div>
+                            </div>
+                            
+                            <!-- Mock Class Entry (White) -->
+                            <div class="flex items-center space-x-4 p-3 bg-white rounded-xl border-l-4 border-yellow-500 shadow-sm timetable-row">
+                                <span class="text-sm font-bold text-gray-600 w-20 timetable-time">10:45 - 11:45</span>
+                                <div>
+                                    <p class="font-medium text-gray-900 timetable-subject">English Literature</p>
+                                    <p class="text-xs text-yellow-600">Reading: 'To Kill a Mockingbird'</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Upcoming Deadlines and AI Reminder -->
+                    <div class="lg:col-span-1 space-y-6">
+                        <div class="content-card bg-white p-6 rounded-2xl shadow-lg border border-red-100">
+                            <h4 class="text-xl font-semibold text-gray-700 mb-4">Upcoming Deadlines</h4>
+                            <ul class="space-y-3">
+                                <li class="text-sm p-2 rounded bg-red-50 border-l-2 border-red-500">
+                                    <p class="font-medium text-red-800">Chemistry Lab Report</p>
+                                    <p class="text-xs text-red-600">Due: Oct 15 (2 days left)</p>
+                                </li>
+                                <li class="text-sm p-2 rounded bg-gray-50 border-l-2 border-gray-300 timetable-list-item">
+                                    <p class="font-medium text-gray-800">History Term Exam</p>
+                                    <p class="text-xs text-gray-600">Date: Oct 28</p>
+                                </li>
+                            </ul>
+                        </div>
+                        
+                        <!-- AI Reminder -->
+                        <div class="p-4 bg-indigo-50 rounded-xl border border-indigo-300">
+                            <p class="font-semibold text-indigo-700 mb-1">🤖 AI Reminder</p>
+                            <p class="text-sm text-indigo-600">You have a **Chemistry** assignment due tomorrow. Ensure your submission is saved locally if you plan to work offline!</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+
+            <!-- 7. Profile & Settings -->
+            <section id="settings" class="hidden active-section">
+                <h3 class="text-3xl font-extrabold text-gray-800 mb-6">⚙️ Profile & Settings</h3>
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    
+                    <!-- Column 1: Profile Card -->
+                    <div class="content-card lg:col-span-1 bg-white p-6 rounded-2xl shadow-lg text-center">
+                        <img src="https://placehold.co/100x100/6366f1/ffffff?text=K" alt="Krutika Chincholkar Profile" class="w-24 h-24 rounded-full object-cover mx-auto border-4 border-indigo-300 mb-4">
+                        <h4 class="text-xl font-bold text-gray-800">Krutika Chincholkar</h4>
+                        <p class="text-sm text-indigo-600 font-medium">Student (Class XII)</p>
+                        
+                        <div class="mt-4 pt-4 border-t border-gray-100 text-left space-y-2">
+                            <p class="text-sm"><span class="font-semibold text-gray-600">Roll No:</span> 2025/12A/004</p>
+                            <p class="text-sm"><span class="font-semibold text-gray-600">Email:</span> krutika.s@example.com</p>
+                            <button class="w-full mt-4 py-2 text-sm bg-indigo-50 text-indigo-600 rounded-xl hover:bg-indigo-100 transition">
+                                Change Profile Photo
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Column 2: Account Settings & Security -->
+                    <div class="content-card lg:col-span-2 bg-white p-8 rounded-2xl shadow-lg">
+                        <h4 class="text-2xl font-semibold text-gray-700 mb-6 border-b pb-2">Account & Security</h4>
+
+                        <form class="space-y-5">
+                            <div class="grid sm:grid-cols-2 gap-4">
+                                <div>
+                                    <label for="fullName" class="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
+                                    <input type="text" id="fullName" value="Krutika Chincholkar" 
+                                           class="w-full p-3 rounded-xl border border-gray-300 focus:ring-indigo-500 focus:border-indigo-500">
+                                </div>
+                                <div>
+                                    <label for="emailUpdate" class="block text-sm font-medium text-gray-700 mb-1">Email (Read Only)</label>
+                                    <input type="email" id="emailUpdate" value="krutika.s@example.com" disabled 
+                                           class="w-full p-3 rounded-xl border border-gray-200 bg-gray-50 cursor-not-allowed">
+                                </div>
+                            </div>
+                            
+                            <!-- Password Change (Mock) -->
+                            <div class="pt-4 border-t border-gray-100">
+                                <label for="newPassword" class="block text-sm font-medium text-gray-700 mb-1">New Password</label>
+                                <input type="password" id="newPassword" placeholder="Enter new password (min 8 chars)" 
+                                       class="w-full p-3 rounded-xl border border-gray-300 focus:ring-indigo-500 focus:border-indigo-500">
+                                <p class="text-xs text-gray-500 mt-1">Leave blank to keep current password.</p>
+                            </div>
+
+                            <button type="submit" onclick="alert('Profile Saved! (Mock)')" class="px-6 py-3 bg-indigo-600 text-white font-semibold rounded-xl hover:bg-indigo-700 transition">
+                                Save Profile Changes
+                            </button>
+                        </form>
+                    </div>
+
+                    <!-- Column 3: Preferences -->
+                    <div class="content-card lg:col-span-3 bg-white p-8 rounded-2xl shadow-lg">
+                        <h4 class="text-2xl font-semibold text-gray-700 mb-6 border-b pb-2">App Preferences</h4>
+
+                        <div class="space-y-4">
+                            <!-- Theme Toggle -->
+                            <div class="flex justify-between items-center py-2 border-b border-gray-100">
+                                <p class="font-medium text-gray-700">Dark/Light Mode Theme</p>
+                                <label for="theme-toggle" class="flex items-center cursor-pointer">
+                                    <div class="relative">
+                                        <input type="checkbox" id="theme-toggle" class="hidden toggle-checkbox">
+                                        <div class="toggle-label block bg-gray-200 w-14 h-8 rounded-full shadow-inner transition duration-300"></div>
+                                        <div class="toggle-checkbox absolute left-1 top-1 bg-white w-6 h-6 rounded-full shadow transition duration-300"></div>
+                                    </div>
+                                    <span class="ml-3 text-sm text-gray-600" id="theme-status">Light</span>
+                                </label>
+                            </div>
+
+                            <!-- Notification Toggle -->
+                            <div class="flex justify-between items-center py-2">
+                                <p class="font-medium text-gray-700">Email Notifications for Assignments</p>
+                                <label for="email-notify" class="flex items-center cursor-pointer">
+                                    <div class="relative">
+                                        <input type="checkbox" id="email-notify" class="hidden toggle-checkbox" checked>
+                                        <div class="toggle-label block bg-gray-200 w-14 h-8 rounded-full shadow-inner transition duration-300"></div>
+                                        <div class="toggle-checkbox absolute left-1 top-1 bg-white w-6 h-6 rounded-full shadow transition duration-300"></div>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </section>
+
+
+        </main>
+        
+        <!-- Footer (Optional PWA banner and Copyright) -->
+        <footer id="dashboard-footer" class="p-4 bg-white border-t border-gray-200 text-center text-xs text-gray-500 mt-auto transition-colors duration-300">
+            <div class="flex justify-center space-x-4 mb-2">
+                <a href="#" class="hover:underline">Privacy Policy</a>
+                <a href="#" class="hover:underline">Terms of Use</a>
+            </div>
+            &copy; EduSync AI 2025. All rights reserved.
+        </footer>
+    </div>
+
+    <!-- JavaScript for Dynamic Functionality and Mocks -->
+    <script>
+        const statusIndicator = document.getElementById('status-indicator');
+        const currentDatetime = document.getElementById('current-datetime');
+        const sidebar = document.getElementById('sidebar');
+        const mobileBackdrop = document.getElementById('mobile-sidebar-backdrop');
+        const activeSections = document.querySelectorAll('.active-section');
+        const sidebarLinks = document.querySelectorAll('.sidebar-link');
+        const chatbotForm = document.getElementById('chatbot-form');
+        const chatbotInput = document.getElementById('chatbot-input');
+        const chatbotHistory = document.getElementById('chatbot-history');
+        const themeToggle = document.getElementById('theme-toggle');
+        const themeStatus = document.getElementById('theme-status');
+        const welcomeText = document.getElementById('welcome-text');
+        const dashboardHeader = document.getElementById('dashboard-header');
+        const dashboardFooter = document.getElementById('dashboard-footer');
+        const contentCards = document.querySelectorAll('.content-card');
+        const notifButton = document.getElementById('notif-button');
+        const dropArea = document.getElementById('drop-area');
+        const chartMocks = [document.getElementById('chart-mock-1'), document.getElementById('chart-mock-2')].filter(Boolean);
+
+
+        // --- Core Functions ---
+
+        function updateDateTime() {
+            const now = new Date();
+            const dateStr = now.toLocaleDateString('en-US', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' });
+            const timeStr = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+            currentDatetime.textContent = `${dateStr} | ${timeStr}`;
+        }
+        setInterval(updateDateTime, 1000); // Update every second
+
+        /**
+         * Checks and updates the online/offline status indicator.
+         */
+        function checkOnlineStatus() {
+            const isOnline = navigator.onLine;
+            let dotColor = 'bg-red-500';
+            let statusText = 'Offline';
+            const isDark = themeToggle.checked;
+
+            if (isOnline) {
+                dotColor = 'bg-green-500';
+                statusText = 'Online';
+            } else {
+                statusText = 'Offline (Changes will sync)';
+            }
+
+            // The text color needs to adapt to the header background
+            const textColorClass = isDark ? 'text-gray-300' : 'text-gray-600';
+
+            statusIndicator.innerHTML = `
+                <span class="w-3 h-3 ${dotColor} rounded-full mr-2 shadow-md ring-2 ring-white"></span>
+                <span class="${textColorClass}">${statusText}</span>
+            `;
+
+            // Display a message in the main content if offline
+            if (!isOnline) {
+                 let offlineMessage = document.querySelector('.offline-banner');
+                 if (!offlineMessage) {
+                    offlineMessage = document.createElement('div');
+                    offlineMessage.className = "fixed bottom-0 left-0 right-0 p-3 bg-red-600 text-white text-center font-medium shadow-2xl z-50 offline-banner";
+                    offlineMessage.textContent = "⚠️ You are offline. Your changes will be saved locally and synced when you reconnect.";
+                    document.body.appendChild(offlineMessage);
+                 }
+            } else {
+                const existingMessage = document.querySelector('.offline-banner');
+                if (existingMessage) existingMessage.remove();
+            }
+        }
+
+        /**
+         * Toggles the sidebar visibility for mobile.
+         */
+        function toggleSidebar() {
+            sidebar.classList.toggle('-translate-x-full');
+            mobileBackdrop.classList.toggle('hidden');
+        }
+        
+        /**
+         * Handles navigation to show the selected main content section.
+         * @param {string} sectionId - The ID of the section to show.
+         */
+        function showSection(sectionId) {
+            // Hide all sections
+            activeSections.forEach(section => section.classList.add('hidden'));
+            
+            // Show the selected section
+            const targetSection = document.getElementById(sectionId);
+            if (targetSection) {
+                targetSection.classList.remove('hidden');
+            }
+
+            // Update active sidebar link
+            sidebarLinks.forEach(link => {
+                link.classList.remove('active', 'dark-active');
+                if (link.getAttribute('href').substring(1) === sectionId) {
+                    link.classList.add('active');
+                    // Ensure dark mode active class is applied if theme is dark
+                    if (themeToggle.checked) {
+                        link.classList.add('dark-active');
+                    }
+                }
+            });
+
+            // Hide sidebar on mobile after selection
+            if (!mobileBackdrop.classList.contains('hidden')) {
+                toggleSidebar();
+            }
+        }
+
+        /**
+         * Mocks a successful file upload and AI feedback.
+         */
+        function handleFileUpload(event) {
+            const file = event.target.files[0];
+            const feedbackBox = document.getElementById('ai-feedback-box');
+            const feedbackMessage = document.getElementById('ai-feedback-message');
+            
+            if (file) {
+                feedbackBox.classList.add('hidden');
+                feedbackMessage.textContent = '';
+
+                // Show loading state
+                feedbackBox.classList.remove('bg-red-100', 'bg-yellow-100');
+                feedbackBox.classList.add('bg-indigo-100', 'text-indigo-800', 'block');
+                feedbackMessage.textContent = `Uploading ${file.name}... Authenticating and scanning for plagiarism.`;
+
+                setTimeout(() => {
+                    // Simulate AI processing
+                    feedbackBox.classList.remove('bg-indigo-100', 'text-indigo-800');
+                    feedbackBox.classList.add('bg-yellow-100', 'text-yellow-800');
+                    feedbackMessage.textContent = `File "${file.name}" submitted. AI preliminary scan suggests: Great structure, but check citation formatting in Section 2 (Topic: Stoichiometry). Grade prediction: A-.`;
+                }, 3000);
+            }
+        }
+
+        /**
+         * Mocks AI chat interaction.
+         */
+        chatbotForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const message = chatbotInput.value.trim();
+            if (!message) return;
+
+            // 1. Display User Message
+            const userMsgEl = document.createElement('div');
+            userMsgEl.className = 'flex justify-end';
+            userMsgEl.innerHTML = `<div class="bg-indigo-600 text-white p-3 rounded-xl rounded-br-none max-w-xs md:max-w-md shadow-md">${message}</div>`;
+            chatbotHistory.appendChild(userMsgEl);
+            chatbotHistory.scrollTop = chatbotHistory.scrollHeight;
+            chatbotInput.value = '';
+
+            // 2. Simulate Bot Response
+            setTimeout(() => {
+                const botMsgEl = document.createElement('div');
+                botMsgEl.className = 'flex justify-start';
+                
+                let botResponse = '';
+                if (message.toLowerCase().includes('newton')) {
+                    botResponse = "Certainly! **Newton's First Law (Law of Inertia)** states that an object will remain at rest or continue to move at a constant velocity unless acted upon by an external net force. Essentially, things keep doing what they're doing! 🍎";
+                } else if (message.toLowerCase().includes('quiz')) {
+                    botResponse = "Starting a 3-question quiz on the Industrial Revolution now! Ready?";
+                } else if (message.toLowerCase().includes('summary')) {
+                    botResponse = "I can summarize your last uploaded notes on 'Cellular Respiration'. Would you like the short, medium, or detailed version?";
+                } else {
+                    botResponse = "That's a great question! Let me check the knowledge base... (Mock Response: Please enter a specific academic query for a real-time answer.)";
+                }
+
+                botMsgEl.innerHTML = `<div class="bg-indigo-100 text-indigo-900 p-3 rounded-xl rounded-tl-none max-w-xs md:max-w-md shadow-sm">
+                    ${botResponse}
+                </div>`;
+                chatbotHistory.appendChild(botMsgEl);
+                chatbotHistory.scrollTop = chatbotHistory.scrollHeight;
+            }, 1500);
+        });
+
+        /**
+         * Mocks Notes Summarizer output.
+         */
+        function generateSummary() {
+            const notesText = document.getElementById('notes-input').value.trim();
+            const summaryLength = document.getElementById('summary-length').value;
+            const outputBox = document.getElementById('summary-output');
+            const summaryText = document.getElementById('summary-text');
+
+            if (!notesText) {
+                // Using console.log instead of alert per instructions
+                console.log("Please paste some notes to summarize.");
+                return;
+            }
+
+            outputBox.classList.remove('hidden');
+            summaryText.textContent = 'Generating AI Summary...';
+
+            setTimeout(() => {
+                let summary = "";
+                if (summaryLength === 'short') {
+                    summary = "1. AI identified 3 key topics: [Topic A], [Topic B], [Topic C].\n2. Primary Focus: Data synthesis.\n3. Action: Ready for revision!";
+                } else if (summaryLength === 'medium') {
+                    summary = "1. The core argument is based on historical context and primary sources.\n2. Key finding: Recent data suggests a shift in trends due to new variables.\n3. Methodology involved quantitative analysis.\n4. Conclusion emphasizes the need for further research.\n5. Summary is now complete.";
+                } else {
+                    summary = "Detailed Summary:\n\nThis detailed summary provides an in-depth analysis of the uploaded text, focusing primarily on the interconnected themes of system architecture and user experience. It highlights that the document strongly advocates for a modular approach to software development, ensuring scalability and maintainability. Furthermore, the text allocates significant space to discussing front-end optimization techniques aimed at reducing latency and improving perceived performance. The final section, which constitutes about 25% of the total content, outlines future development roadmap points.";
+                }
+                summaryText.textContent = summary;
+            }, 2000);
+        }
+
+        /**
+         * Copies text from an element to the clipboard.
+         * @param {string} elementId - ID of the element containing the text.
+         */
+        function copyToClipboard(elementId) {
+            const el = document.getElementById(elementId);
+            if (!el) return;
+
+            // Use execCommand for broader compatibility within iframes
+            const tempInput = document.createElement('textarea');
+            tempInput.value = el.textContent;
+            document.body.appendChild(tempInput);
+            tempInput.select();
+            document.execCommand('copy');
+            document.body.removeChild(tempInput);
+            
+            // Provide visual feedback
+            const originalText = el.textContent;
+            el.textContent = 'Copied to clipboard!';
+            setTimeout(() => {
+                el.textContent = originalText;
+            }, 1500);
+        }
+
+        /**
+         * Toggles Dark/Light mode (mock functionality).
+         */
+        themeToggle.addEventListener('change', () => {
+            const isDark = themeToggle.checked;
+            themeStatus.textContent = isDark ? "Dark" : "Light";
+
+            // 1. Update Body (main background)
+            if (isDark) {
+                document.body.classList.add('bg-gray-900', 'text-gray-100');
+                document.body.classList.remove('bg-f7f9fc', 'text-333');
+            } else {
+                document.body.classList.add('bg-f7f9fc', 'text-333');
+                document.body.classList.remove('bg-gray-900', 'text-gray-100');
+            }
+
+            // 2. Update Major Containers: Sidebar, Header, Footer
+            const majorContainers = [sidebar, dashboardHeader, dashboardFooter].filter(Boolean);
+
+            majorContainers.forEach(el => {
+                if (isDark) {
+                    el.classList.remove('bg-white', 'bg-white/95', 'shadow-md', 'border-gray-200', 'border-indigo-200');
+                    el.classList.add('bg-gray-800', 'shadow-xl', 'border-gray-700', 'text-gray-200');
+                } else {
+                    el.classList.add('bg-white', 'shadow-md');
+                    el.classList.remove('bg-gray-800', 'shadow-xl', 'border-gray-700', 'text-gray-200');
+                    if (el === sidebar) el.classList.add('border-indigo-200');
+                }
+            });
+            
+            // Handle Header transparency swap
+            dashboardHeader.classList.toggle('bg-white/95', !isDark);
+            dashboardHeader.classList.toggle('bg-gray-800/95', isDark);
+
+            // 3. Update Cards (elements with .content-card class)
+            contentCards.forEach(card => {
+                if (isDark) {
+                    card.classList.remove('bg-white', 'bg-indigo-50', 'border-indigo-100', 'border-teal-100', 'border-yellow-100', 'border-pink-100', 'border-red-100', 'shadow-lg');
+                    card.classList.add('bg-gray-700', 'border-gray-600', 'shadow-2xl');
+                } else {
+                    card.classList.add('bg-white');
+                    card.classList.remove('bg-gray-700', 'border-gray-600', 'shadow-2xl');
+                    // Reset primary background color for Quick Actions panel
+                    if (card.classList.contains('mt-8')) {
+                        card.classList.add('bg-indigo-50');
+                    }
+                }
+            });
+            
+            // 4. Update Sidebar Links (Text & Active State)
+            document.querySelectorAll('.sidebar-link').forEach(link => {
+                if (isDark) {
+                    // Update inactive links text/hover
+                    link.classList.remove('text-gray-700', 'hover:bg-indigo-50');
+                    link.classList.add('text-gray-300', 'hover:bg-gray-700');
+                    // Apply dark active class if necessary
+                    if (link.classList.contains('active')) {
+                         link.classList.add('dark-active');
+                    }
+                } else {
+                    // Restore light mode
+                    link.classList.add('text-gray-700', 'hover:bg-indigo-50');
+                    link.classList.remove('text-gray-300', 'hover:bg-gray-700', 'dark-active');
+                }
+            });
+            
+            // 5. Tables: Thead, Tbody rows, and borders
+            document.querySelectorAll('table').forEach(table => {
+                // Thead background and text
+                const thead = table.querySelector('thead');
+                if (thead) {
+                    if (isDark) {
+                        thead.classList.remove('bg-gray-50');
+                        thead.classList.add('bg-gray-600');
+                    } else {
+                        thead.classList.add('bg-gray-50');
+                        thead.classList.remove('bg-gray-600');
+                    }
+                }
+                
+                // Tbody rows (background, border, and text)
+                table.querySelectorAll('tbody tr').forEach(row => {
+                    if (isDark) {
+                        // Apply dark row styles
+                        row.classList.add('bg-gray-700/50', 'text-gray-300', 'border-gray-600');
+                        row.classList.remove('bg-white', 'border-gray-200');
+                        
+                        // Fix cell colors which might be hardcoded dark text
+                        row.querySelectorAll('.text-gray-900, .text-gray-500').forEach(cellText => {
+                            cellText.classList.add('text-gray-300');
+                            cellText.classList.remove('text-gray-900', 'text-gray-500');
+                        });
+                    } else {
+                        // Restore light mode
+                        row.classList.add('bg-white', 'border-gray-200');
+                        row.classList.remove('bg-gray-700/50', 'text-gray-300', 'border-gray-600');
+                        
+                        // Restore mixed text colors in table cells
+                        row.querySelectorAll('.text-gray-300').forEach(cellText => {
+                            if (cellText.classList.contains('font-medium')) {
+                                cellText.classList.add('text-gray-900'); // Primary text
+                            } else {
+                                cellText.classList.add('text-gray-500'); // Secondary text
+                            }
+                            cellText.classList.remove('text-gray-300');
+                        });
+                    }
+                });
+            });
+
+            // 6. Timetable Rows: inner entries with hardcoded white BG/shadows & the History list item (timetable-list-item)
+            document.querySelectorAll('.timetable-row, .timetable-list-item').forEach(el => {
+                const isHistoryListItem = el.classList.contains('timetable-list-item');
+                const isIndigoRow = el.classList.contains('bg-indigo-50');
+
+                if (isDark) {
+                    // Update background for non-red list items and non-indigo rows
+                    if (isHistoryListItem) {
+                        el.classList.remove('bg-gray-50');
+                        el.classList.add('bg-gray-700/50');
+                    } else if (!isIndigoRow) {
+                        el.classList.remove('bg-white', 'shadow-sm');
+                        el.classList.add('bg-gray-600/50', 'border-gray-500');
+                    }
+
+                    // Text color fix for all timetable-related elements
+                    el.querySelectorAll('.timetable-subject, .text-gray-800').forEach(el => { el.classList.remove('text-gray-900', 'text-gray-800'); el.classList.add('text-gray-100'); });
+                    el.querySelectorAll('.timetable-time, .text-gray-600').forEach(el => { el.classList.remove('text-gray-600'); el.classList.add('text-gray-300'); });
+
+                } else {
+                    // Restore light mode
+                    if (isHistoryListItem) {
+                        el.classList.add('bg-gray-50');
+                        el.classList.remove('bg-gray-700/50');
+                    } else if (!isIndigoRow) {
+                        el.classList.add('bg-white', 'shadow-sm');
+                        el.classList.remove('bg-gray-600/50', 'border-gray-500');
+                    }
+                     // Restore default text colors
+                    el.querySelectorAll('.timetable-subject, .text-gray-100').forEach(el => { el.classList.remove('text-gray-100'); el.classList.add('text-gray-900', 'text-gray-800'); });
+                    el.querySelectorAll('.timetable-time, .text-gray-300').forEach(el => { el.classList.remove('text-gray-300'); el.classList.add('text-gray-600'); });
+                }
+            });
+
+
+            // 7. Update Inputs and TextAreas (ensuring visibility in dark mode)
+            document.querySelectorAll('input, textarea, select').forEach(input => {
+                if (isDark) {
+                    input.classList.add('bg-gray-600', 'border-gray-500', 'text-gray-100');
+                    input.classList.remove('bg-white', 'border-gray-300', 'text-gray-900', 'bg-gray-50', 'cursor-not-allowed');
+                } else {
+                    input.classList.remove('bg-gray-600', 'border-gray-500', 'text-gray-100');
+                    input.classList.add('bg-white', 'border-gray-300', 'text-gray-900');
+                    if(input.disabled) input.classList.add('bg-gray-50', 'cursor-not-allowed');
+                }
+            });
+
+            // 8. Notification Icon Button (Explicit Fix)
+            if (notifButton) {
+                if (isDark) {
+                    notifButton.classList.remove('bg-gray-100', 'text-gray-600');
+                    notifButton.classList.add('bg-gray-700', 'text-gray-300');
+                } else {
+                    notifButton.classList.add('bg-gray-100', 'text-gray-600');
+                    notifButton.classList.remove('bg-gray-700', 'text-gray-300');
+                }
+            }
+            
+            // 9. Initial EduBot Message (Explicit Fix)
+            const initialBotMessage = document.getElementById('initial-bot-message');
+            if (initialBotMessage) {
+                if (isDark) {
+                    initialBotMessage.classList.remove('bg-indigo-100', 'text-indigo-900');
+                    initialBotMessage.classList.add('bg-indigo-800', 'text-indigo-100');
+                } else {
+                    initialBotMessage.classList.add('bg-indigo-100', 'text-indigo-900');
+                    initialBotMessage.classList.remove('bg-indigo-800', 'text-indigo-100');
+                }
+            }
+
+            // 10. Explicitly handle light-colored non-card backgrounds (Charts, Drop Area)
+            [dropArea, ...chartMocks].forEach(el => {
+                if (el) {
+                    if (isDark) {
+                        // Specific background swaps for chart mocks and drop area
+                        el.classList.remove('bg-gray-50', 'bg-indigo-50', 'border-gray-200', 'border-indigo-300');
+                        el.classList.add('bg-gray-600/50', 'border-gray-600');
+                        el.classList.remove('text-gray-500', 'text-gray-600', 'text-gray-400');
+                        el.classList.add('text-gray-300');
+                    } else {
+                        el.classList.remove('bg-gray-600/50', 'border-gray-600');
+                        el.classList.add('text-gray-500'); // Restore chart mock text
+                        
+                        // Restore original light background based on ID
+                        if (el.id === 'drop-area') {
+                            el.classList.add('bg-indigo-50', 'border-indigo-300');
+                            el.querySelectorAll('.text-gray-300').forEach(txt => {
+                                if (txt.classList.contains('text-xs')) {
+                                    txt.classList.add('text-gray-400');
+                                } else {
+                                    txt.classList.add('text-gray-600');
+                                }
+                                txt.classList.remove('text-gray-300');
+                            });
+
+                        } else { // Chart mocks
+                            el.classList.add('bg-gray-50', 'border-gray-200', 'text-gray-500');
+                        }
+                    }
+                }
+            });
+            
+            // 11. Global Primary Text Sweep (Final assurance)
+            // *** FIX: Added 'h2' to the selector to target the welcome message in the header ***
+            document.querySelectorAll('h2, h3, h4, p, span, td, label').forEach(el => {
+                // Skip colored badges, specific colored spans, and buttons
+                if (el.closest('.bg-red-100, .bg-green-100, .bg-indigo-100, .bg-pink-100, .text-indigo-600, button, a')) return;
+
+                if (isDark) {
+                    if (el.classList.contains('text-gray-900') || el.classList.contains('text-gray-800') || el.classList.contains('text-gray-700')) {
+                        el.classList.add('text-gray-100');
+                    } else if (el.classList.contains('text-gray-600') || el.classList.contains('text-gray-500')) {
+                        el.classList.add('text-gray-300');
+                    }
+                    el.classList.remove('text-gray-900', 'text-gray-800', 'text-gray-700', 'text-gray-600', 'text-gray-500');
+                } else {
+                    if (el.classList.contains('text-gray-100')) {
+                        el.classList.add('text-gray-900');
+                    } else if (el.classList.contains('text-gray-300')) {
+                         el.classList.add('text-gray-600');
+                    }
+                    el.classList.remove('text-gray-100', 'text-gray-300');
+                }
+            });
+
+
+            // Re-run status check to update indicator text color against the new header background
+            checkOnlineStatus();
+            
+            console.log(`Theme toggled to: ${isDark ? 'Dark' : 'Light'}`);
+        });
+
+        function handleLogout() {
+            // In a real app, you would clear auth tokens and redirect to login
+            console.log("Logged out. Simulating redirect to login page.");
+            document.body.innerHTML = '<div class="flex items-center justify-center min-h-screen text-xl font-semibold text-gray-700">Logging out...</div>';
+            // Mock clear local session
+            localStorage.removeItem('edusync-offline-session'); 
+        }
+
+        // --- Initial Load ---
+        window.onload = function() {
+            updateDateTime();
+            checkOnlineStatus();
+            window.addEventListener('online', checkOnlineStatus);
+            window.addEventListener('offline', checkOnlineStatus);
+
+            // Set up initial navigation state
+            showSection('overview');
+
+            // Set up sidebar link handlers
+            sidebarLinks.forEach(link => {
+                link.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const sectionId = link.getAttribute('href').substring(1);
+                    showSection(sectionId);
+                });
+            });
+            
+            // Apply initial active class if dark mode is already enabled on load
+            if (themeToggle.checked) {
+                 document.querySelector('.sidebar-link.active')?.classList.add('dark-active');
+                 // Manually run toggle once on load if checkbox is checked to apply dynamic styles
+                 themeToggle.dispatchEvent(new Event('change'));
+            }
+        };
+    </script>
+</body>
+</html>

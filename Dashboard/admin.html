@@ -1,0 +1,1087 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EduSync AI — Admin Dashboard</title>
+    <!-- Load Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Custom font import for modern look */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
+        
+        /* Apply Inter font */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f7f9fc; /* Light, calming background */
+            color: #333;
+        }
+
+        /* Utility for Active Sidebar Link (Light Mode Default) */
+        .sidebar-link.active {
+            background-color: #e0e7ff; /* Indigo-100 */
+            color: #4f46e5; /* Indigo-600 */
+            font-weight: 600;
+            border-left-color: #4f46e5;
+        }
+        /* Utility for Active Sidebar Link (Dark Mode Override) */
+        .sidebar-link.dark-active {
+            background-color: #4338CA !important; /* Indigo-700 */
+            color: #ffffff !important;
+            border-left-color: #818CF8 !important; /* Indigo-300 */
+        }
+
+        /* Hide scrollbar for aesthetic purposes */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;  /* IE and Edge */
+            scrollbar-width: none;  /* Firefox */
+        }
+
+        /* Custom toggle switch styling */
+        .toggle-checkbox:checked {
+            right: 0;
+            background-color: #4f46e5; /* Indigo-600 */
+        }
+        .toggle-checkbox:checked + .toggle-label {
+            background-color: #a5b4fc; /* Indigo-300 */
+        }
+        
+        /* Utility classes for complex dark mode swaps */
+        .card-light {
+            background-color: white;
+            color: #333;
+        }
+        .card-dark {
+            background-color: #374151; /* gray-700 */
+            color: #d1d5db; /* gray-300 */
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col transition-colors duration-300">
+
+    <!-- Mobile Sidebar Toggle -->
+    <div id="mobile-sidebar-backdrop" class="fixed inset-0 bg-gray-900 bg-opacity-50 z-40 hidden md:hidden" onclick="toggleSidebar()"></div>
+
+    <!-- Sidebar Navigation Menu -->
+    <aside id="sidebar" class="fixed top-0 left-0 h-full w-64 bg-white shadow-xl z-50 transform -translate-x-full md:translate-x-0 transition-transform duration-300 flex flex-col border-r border-indigo-200">
+        <div class="p-6 border-b border-indigo-200">
+            <h1 class="text-2xl font-extrabold text-indigo-600 flex items-center">
+                <!-- AI Icon -->
+                <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-4 1 5-2 1-4zm-9.75 3h14v-2h-14v2zM12 10a5 5 0 110 10a5 5 0 010-10z"></path></svg>
+                EduSync AI
+            </h1>
+        </div>
+        
+        <nav class="flex-grow p-4 space-y-2 no-scrollbar overflow-y-auto">
+            <a href="#overview" class="sidebar-link active block px-4 py-3 rounded-xl flex items-center space-x-3 text-gray-700 hover:bg-indigo-50 border-l-4 border-transparent transition duration-150">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3"></path></svg>
+                <span>Overview / Home</span>
+            </a>
+            <a href="#manage-teachers" class="sidebar-link block px-4 py-3 rounded-xl flex items-center space-x-3 text-gray-700 hover:bg-indigo-50 border-l-4 border-transparent transition duration-150">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h-1a1 1 0 01-1-1v-4a1 1 0 011-1h1a1 1 0 011 1v4a1 1 0 01-1 1zM7 20h-1a1 1 0 01-1-1v-4a1 1 0 011-1h1a1 1 0 011 1v4a1 1 0 01-1 1zM10 18h4M12 10V6M12 21v-1M12 6a4 4 0 100 8 4 4 0 000-8z"></path></svg>
+                <span>Manage Teachers</span>
+            </a>
+            <a href="#manage-students" class="sidebar-link block px-4 py-3 rounded-xl flex items-center space-x-3 text-gray-700 hover:bg-indigo-50 border-l-4 border-transparent transition duration-150">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354l.001.001a.75.75 0 011.06 0l7.5 7.5a.75.75 0 01-1.06 1.06l-6.97-6.97-6.97 6.97a.75.75 0 01-1.06-1.06l7.5-7.5zM12 15a.75.75 0 01.75-.75h6.5a.75.75 0 010 1.5h-6.5A.75.75 0 0112 15zM12 19.5a.75.75 0 01.75-.75h6.5a.75.75 0 010 1.5h-6.5a.75.75 0 01-.75-.75zM18.5 7.5a.5.5 0 100-1 .5.5 0 000 1zM5.5 7.5a.5.5 0 100-1 .5.5 0 000 1z"></path></svg>
+                <span>Manage Students</span>
+            </a>
+             <a href="#class-management" class="sidebar-link block px-4 py-3 rounded-xl flex items-center space-x-3 text-gray-700 hover:bg-indigo-50 border-l-4 border-transparent transition duration-150">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                <span>Class & Course Management</span>
+            </a>
+            <a href="#attendance-records" class="sidebar-link block px-4 py-3 rounded-xl flex items-center space-x-3 text-gray-700 hover:bg-indigo-50 border-l-4 border-transparent transition duration-150">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                <span>Attendance Records</span>
+            </a>
+            <a href="#analytics" class="sidebar-link block px-4 py-3 rounded-xl flex items-center space-x-3 text-gray-700 hover:bg-indigo-50 border-l-4 border-transparent transition duration-150">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 8v8m-4-5v5m-4-2v2m4-2a2 2 0 01-2 2H6a2 2 0 01-2-2V6a2 2 0 012-2h4a2 2 0 012 2v10z"></path></svg>
+                <span>Performance Analytics</span>
+            </a>
+            <a href="#data-management" class="sidebar-link block px-4 py-3 rounded-xl flex items-center space-x-3 text-gray-700 hover:bg-indigo-50 border-l-4 border-transparent transition duration-150">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7V4m0 0h3m-3 0v3m0-3l4 4m2 10h4m-4 0v-4m0 0l4 4m-4-4l-4 4m0 0l-4-4m0 4v-4m4 4h-4"></path></svg>
+                <span>Data Management (Sync)</span>
+            </a>
+            <a href="#roles" class="sidebar-link block px-4 py-3 rounded-xl flex items-center space-x-3 text-gray-700 hover:bg-indigo-50 border-l-4 border-transparent transition duration-150">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0zM12 18.75c-3.1 0-6.1-1.3-8.25-3.5C1.5 12.05.5 8.75.5 4.5v-1c0-1.1.9-2 2-2h18c1.1 0 2 .9 2 2v1c0 4.25-1 7.55-3.25 10.75-2.15 2.2-5.15 3.5-8.25 3.5z"></path></svg>
+                <span>Role & Permission Control</span>
+            </a>
+            <a href="#edubot" class="sidebar-link block px-4 py-3 rounded-xl flex items-center space-x-3 text-gray-700 hover:bg-indigo-50 border-l-4 border-transparent transition duration-150">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9h-3M8 9v6m-4 3h16a2 2 0 002-2v-4a2 2 0 00-2-2H4a2 2 0 00-2 2v4a2 2 0 002 2z"></path></svg>
+                <span>EduBot Admin Assistant</span>
+            </a>
+            <a href="#settings" class="sidebar-link block px-4 py-3 rounded-xl flex items-center space-x-3 text-gray-700 hover:bg-indigo-50 border-l-4 border-transparent transition duration-150">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317C10.73 3.633 11.52 3.633 11.925 4.317L14.47 8.573a1 1 0 00.817.466h4.55a1 1 0 01.908 1.45L18.15 17.584a1 1 0 01-.817.466h-4.55a1 1 0 00-.817.466L10.325 21.683c-.405.684-1.195.684-1.6 0L5.78 17.584a1 1 0 00-.817-.466H.413a1 1 0 01-.908-1.45L3.85 9.04a1 1 0 01.817-.466h4.55a1 1 0 00.817-.466l1.625-3.25z"></path></svg>
+                <span>Settings</span>
+            </a>
+        </nav>
+        
+        <div class="p-6 border-t border-gray-200">
+            <button onclick="handleLogout()" class="w-full py-2 bg-red-100 text-red-600 font-semibold rounded-xl flex items-center justify-center hover:bg-red-200 transition duration-150">
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
+                Logout
+            </button>
+        </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <div class="flex-1 md:ml-64 flex flex-col transition-all duration-300">
+        
+        <!-- Dashboard Header -->
+        <header id="dashboard-header" class="sticky top-0 z-30 bg-white/95 backdrop-blur-sm shadow-md p-4 flex items-center justify-between transition-colors duration-300">
+            <div class="flex items-center">
+                <!-- Mobile Menu Button -->
+                <button class="md:hidden mr-4 text-gray-600 hover:text-indigo-600" onclick="toggleSidebar()">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+                </button>
+                <h2 id="welcome-text" class="text-xl font-bold text-gray-800">Welcome, Admin 👋</h2>
+            </div>
+
+            <div class="flex items-center space-x-4">
+                
+                <!-- Date/Time Display -->
+                <span id="current-datetime" class="hidden sm:inline text-sm text-gray-500 font-medium"></span>
+                
+                <!-- Role Info -->
+                <span class="hidden sm:inline text-sm bg-indigo-100 text-indigo-700 px-3 py-1 rounded-full font-semibold">
+                    System Administrator
+                </span>
+                
+                <!-- Status Indicator (Online/Offline) -->
+                <div id="status-indicator" class="flex items-center text-sm font-medium">
+                    <!-- JS will update the text and dot color -->
+                </div>
+                
+                <!-- Notification Icon -->
+                <button id="notif-button" class="relative p-2 text-gray-600 bg-gray-100 rounded-full hover:bg-indigo-100 hover:text-indigo-600 transition">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path></svg>
+                    <!-- New notifications badge for system alerts/new registrations -->
+                    <span class="absolute top-0 right-0 block h-3 w-3 rounded-full ring-2 ring-white bg-red-500"></span>
+                </button>
+                
+                <!-- Profile Photo -->
+                <img src="https://placehold.co/40x40/6366f1/ffffff?text=A" alt="Admin Profile" class="w-10 h-10 rounded-full object-cover border-2 border-indigo-400">
+            </div>
+        </header>
+
+        <!-- Main Content Sections (Scrollable) -->
+        <main class="p-6 md:p-8 space-y-10 flex-1">
+            
+            <!-- 1. Dashboard Overview -->
+            <section id="overview" class="active-section">
+                <h3 class="text-3xl font-extrabold text-gray-800 mb-6">Platform Overview / Home</h3>
+                <p class="mb-6 italic text-gray-600">"The command center for EduSync AI — Monitoring system health and user activity."</p>
+
+                <!-- Quick Stats Cards -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    
+                    <!-- Card 1: Total Students -->
+                    <div class="content-card bg-white p-6 rounded-2xl shadow-lg border border-indigo-100 transition hover:shadow-xl">
+                        <p class="text-sm text-gray-500 mb-1">Total Students</p>
+                        <div class="flex items-center justify-between">
+                            <span class="text-4xl font-bold text-indigo-600">300</span>
+                            <div class="w-16 h-16 rounded-full bg-indigo-50 flex items-center justify-center font-bold text-indigo-600">
+                                🧑‍🎓
+                            </div>
+                        </div>
+                        <p class="text-xs text-green-500 mt-2">+12 New this month</p>
+                    </div>
+
+                    <!-- Card 2: Total Teachers -->
+                    <div class="content-card bg-white p-6 rounded-2xl shadow-lg border border-teal-100 transition hover:shadow-xl">
+                        <p class="text-sm text-gray-500 mb-1">Total Teachers</p>
+                        <div class="flex items-center justify-between">
+                            <span class="text-4xl font-bold text-teal-600">15</span>
+                            <div class="w-16 h-16 rounded-full bg-teal-50 flex items-center justify-center font-bold text-teal-600">
+                                👩‍🏫
+                            </div>
+                        </div>
+                        <p class="text-xs text-gray-500 mt-2">5 Active subjects</p>
+                    </div>
+
+                    <!-- Card 3: Active Assignments -->
+                    <div class="content-card bg-white p-6 rounded-2xl shadow-lg border border-yellow-100 transition hover:shadow-xl">
+                        <p class="text-sm text-gray-500 mb-1">Active Assignments</p>
+                        <div class="flex items-center justify-between">
+                            <span class="text-4xl font-bold text-yellow-600">25</span>
+                            <div class="w-16 h-16 rounded-full bg-yellow-50 flex items-center justify-center font-bold text-yellow-600">
+                                📝
+                            </div>
+                        </div>
+                        <p class="text-xs text-orange-500 mt-2">7 pending teacher reviews</p>
+                    </div>
+
+                    <!-- Card 4: System Health -->
+                    <div class="content-card bg-white p-6 rounded-2xl shadow-lg border border-green-100 transition hover:shadow-xl">
+                        <p class="text-sm text-gray-500 mb-1">System Health</p>
+                        <div class="flex items-center justify-between">
+                            <span class="text-4xl font-bold text-green-600">Stable</span>
+                            <div class="w-16 h-16 rounded-full bg-green-50 flex items-center justify-center font-bold text-green-600">
+                                ✅
+                            </div>
+                        </div>
+                        <p class="text-xs text-gray-500 mt-2">Last backup: 1 hr ago</p>
+                    </div>
+                </div>
+
+                <!-- Admin AI Insights & Activity Log -->
+                <div class="grid lg:grid-cols-3 gap-6 mt-8">
+                    <div class="content-card lg:col-span-2 bg-white p-6 rounded-2xl shadow-lg border border-indigo-200">
+                        <h4 class="text-xl font-semibold text-gray-700 mb-4">Recent Activities Log</h4>
+                        <ul class="space-y-2 text-sm text-gray-700">
+                            <li class="border-b border-gray-100 pb-2">Teacher: Ms. Sharma updated Grade 10 timetable. <span class="text-xs text-gray-500 float-right">2 min ago</span></li>
+                            <li class="border-b border-gray-100 pb-2">Student: Krutika Chincholkar registered (Grade 12). <span class="text-xs text-gray-500 float-right">1 hr ago</span></li>
+                            <li class="border-b border-gray-100 pb-2">System: Automatic database synchronization started. <span class="text-xs text-gray-500 float-right">4 hr ago</span></li>
+                        </ul>
+                        <button class="mt-4 text-sm text-indigo-600 underline">View Full Audit Log</button>
+                    </div>
+
+                    <div class="p-6 bg-pink-100 text-pink-800 rounded-xl border border-pink-300">
+                        <p class="font-semibold mb-2">🤖 AI System Summary:</p>
+                        <p class="text-sm">3 teachers have pending grading tasks exceeding the 48-hour threshold. **Action Required:** Class 9B attendance is 70% this week, 10% below average. Suggest checking teacher inputs.</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 2. Manage Teachers -->
+            <section id="manage-teachers" class="hidden active-section">
+                <h3 class="text-3xl font-extrabold text-gray-800 mb-6">👩‍🏫 Manage Teachers</h3>
+
+                <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+                    
+                    <!-- Add New Teacher Form -->
+                    <div class="content-card lg:col-span-1 bg-white p-6 rounded-2xl shadow-lg space-y-4 h-fit">
+                        <h4 class="text-xl font-semibold text-gray-700">Add New Teacher</h4>
+                        <input type="text" placeholder="Full Name" class="w-full p-3 rounded-xl border border-gray-300">
+                        <input type="email" placeholder="Email" class="w-full p-3 rounded-xl border border-gray-300">
+                        <input type="password" placeholder="Temporary Password" class="w-full p-3 rounded-xl border border-gray-300">
+                        <select class="w-full p-3 rounded-xl border border-gray-300">
+                            <option>Subject: Mathematics</option>
+                            <option>Subject: Science</option>
+                            <option>Subject: History</option>
+                        </select>
+                        <button onclick="mockAddTeacher()" class="w-full px-4 py-3 bg-indigo-600 text-white font-semibold rounded-xl hover:bg-indigo-700 transition">
+                            Create Teacher Account
+                        </button>
+                    </div>
+                    
+                    <!-- Teacher List Table -->
+                    <div class="content-card lg:col-span-3 bg-white p-6 rounded-2xl shadow-lg space-y-4">
+                        <h4 class="text-xl font-semibold text-gray-700">Active Teacher List (15)</h4>
+                        
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full divide-y divide-gray-200">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">ID</th>
+                                        <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Name</th>
+                                        <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Subject</th>
+                                        <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Classes</th>
+                                        <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                                        <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-gray-200" id="teacher-list-body">
+                                    <!-- Dynamic rows from JS -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 3. Manage Students -->
+            <section id="manage-students" class="hidden active-section">
+                <h3 class="text-3xl font-extrabold text-gray-800 mb-6">👩‍🎓 Manage Students</h3>
+
+                <div class="content-card bg-white p-6 rounded-2xl shadow-lg space-y-6">
+                    <h4 class="text-xl font-semibold text-gray-700">Student Database (Total: 300)</h4>
+                    
+                    <div class="flex flex-col sm:flex-row justify-between items-center space-y-3 sm:space-y-0">
+                        <input type="search" placeholder="Search by name, roll, or class..." class="p-2 border rounded-xl text-sm w-full sm:w-1/3">
+                        <div class="flex space-x-3">
+                             <button class="px-4 py-2 bg-teal-500 text-white rounded-xl text-sm hover:bg-teal-600">Import CSV</button>
+                             <button class="px-4 py-2 bg-gray-200 text-gray-700 rounded-xl text-sm hover:bg-gray-300">Export All</button>
+                        </div>
+                    </div>
+
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Roll No</th>
+                                    <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Name</th>
+                                    <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Class</th>
+                                    <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Avg. Grade</th>
+                                    <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Engagement</th>
+                                    <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-200" id="student-list-body">
+                                <!-- Dynamic rows from JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 4. Class & Course Management (Placeholder) -->
+            <section id="class-management" class="hidden active-section">
+                <h3 class="text-3xl font-extrabold text-gray-800 mb-6">🏫 Class & Course Management</h3>
+                <div class="content-card p-6 bg-white rounded-2xl shadow-lg">
+                    <p class="text-gray-700 font-semibold mb-4">Define School Structure</p>
+                    <p class="text-sm text-gray-600">This section allows the creation of new classes (e.g., Grade 9A, 10B), assignment of teachers, and management of course content and capacity.</p>
+                    <button class="mt-4 px-4 py-2 bg-indigo-500 text-white rounded-xl text-sm hover:bg-indigo-600">AI: Auto-Generate Timetable (Mock)</button>
+                    <div class="p-4 mt-4 bg-gray-50 border border-gray-200 rounded-lg">
+                        <p class="font-semibold text-gray-800">Current Structure Summary:</p>
+                        <p class="text-sm text-gray-600">12 Active Grades (VI-XII). 34 Total Sections. 5 Core Subjects defined.</p>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- 5. Attendance Records (Placeholder) -->
+            <section id="attendance-records" class="hidden active-section">
+                <h3 class="text-3xl font-extrabold text-gray-800 mb-6">🧮 Attendance Records (System-wide)</h3>
+                <div class="content-card p-6 bg-white rounded-2xl shadow-lg">
+                    <p class="text-gray-700 font-semibold mb-4">Global Attendance Reporting</p>
+                    <p class="text-sm text-gray-600">Monitor attendance trends across all classes. Use filters below to drill down by class, teacher, or date range.</p>
+                    <div class="flex space-x-4 mt-4">
+                        <select class="p-2 border rounded-xl text-sm">
+                            <option>Filter by Class...</option>
+                            <option>Grade 10A</option>
+                            <option>Grade 9B</option>
+                        </select>
+                         <button class="px-4 py-2 bg-green-500 text-white rounded-xl text-sm hover:bg-green-600">Generate Report PDF</button>
+                    </div>
+                    <div class="p-4 mt-4 bg-pink-100 text-pink-800 rounded-lg border border-pink-300">
+                        <p class="font-semibold">AI Alert:</p>
+                        <p class="text-sm">Class 8B attendance is 70% this week — 10% below the school average. Consider triggering a teacher inquiry.</p>
+                    </div>
+                </div>
+            </section>
+
+
+            <!-- 6. Performance Analytics -->
+            <section id="analytics" class="hidden active-section">
+                <h3 class="text-3xl font-extrabold text-gray-800 mb-6">📊 Performance Analytics (Cross-Platform)</h3>
+                
+                <div class="grid lg:grid-cols-2 gap-6">
+                    <div class="content-card bg-white p-6 rounded-2xl shadow-lg">
+                        <h4 class="text-xl font-semibold text-gray-700 mb-4">Class Performance Comparison (Math)</h4>
+                        <div id="chart-mock-1" class="bg-gray-50 h-64 flex items-center justify-center rounded-lg border border-gray-200 text-gray-500">
+                            [Mock Bar Chart: Grade 9A (88%) vs 9B (75%) vs 9C (81%)]
+                        </div>
+                    </div>
+                    
+                    <div class="content-card bg-white p-6 rounded-2xl shadow-lg">
+                        <h4 class="text-xl font-semibold text-gray-700 mb-4">Grades vs. Submission Rates Correlation</h4>
+                        <div id="chart-mock-2" class="bg-gray-50 h-64 flex items-center justify-center rounded-lg border border-gray-200 text-gray-500">
+                            [Mock Scatter Plot: High Grades correlate with High Submission]
+                        </div>
+                    </div>
+                </div>
+
+                <div class="p-4 bg-indigo-100 text-indigo-800 rounded-xl border border-indigo-300 mt-6">
+                    <p class="font-semibold">🎯 AI Trend Prediction:</p>
+                    <p class="text-sm">Math scores are projected to drop 5% next quarter due to low completion rates in the current Algebra module across three classes. Recommend immediate teacher intervention.</p>
+                </div>
+            </section>
+            
+            <!-- 7. Data Management (Sync) -->
+            <section id="data-management" class="hidden active-section">
+                <h3 class="text-3xl font-extrabold text-gray-800 mb-6">📂 Data Management & Synchronization</h3>
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    
+                    <!-- Sync Status -->
+                    <div class="content-card lg:col-span-1 bg-white p-6 rounded-2xl shadow-lg space-y-3">
+                        <h4 class="text-xl font-semibold text-gray-700">Sync & Offline Status</h4>
+                        <p class="text-sm text-gray-600"><span class="font-semibold">Last Cloud Sync:</span> <span id="last-sync">1 minute ago</span></p>
+                        <p class="text-sm text-gray-600"><span class="font-semibold">Offline Queued Changes:</span> <span id="offline-queue" class="text-orange-500">12 Pending Records</span></p>
+                        <button onclick="mockDataSync()" class="w-full mt-2 px-4 py-2 bg-indigo-600 text-white rounded-xl text-sm hover:bg-indigo-700 transition">
+                            Sync Now (Force)
+                        </button>
+                    </div>
+
+                    <!-- Backup & Restore -->
+                    <div class="content-card lg:col-span-1 bg-white p-6 rounded-2xl shadow-lg space-y-3">
+                        <h4 class="text-xl font-semibold text-gray-700">Backup & Restore</h4>
+                        <p class="text-sm text-gray-600">Last Full Backup: Oct 10, 2025</p>
+                        <p class="text-xs text-green-600">Auto-backup scheduled daily at 02:00 AM.</p>
+                        <button class="w-full px-4 py-2 bg-green-500 text-white rounded-xl text-sm hover:bg-green-600 transition">
+                            Run Full Backup
+                        </button>
+                        <button class="w-full px-4 py-2 bg-red-500 text-white rounded-xl text-sm hover:bg-red-600 transition">
+                            Restore from Snapshot
+                        </button>
+                    </div>
+                    
+                    <!-- Data Security/Encryption -->
+                    <div class="content-card lg:col-span-1 bg-white p-6 rounded-2xl shadow-lg space-y-3">
+                        <h4 class="text-xl font-semibold text-gray-700">Security & Encryption</h4>
+                         <div class="flex justify-between items-center py-1">
+                            <p class="text-sm text-gray-600">Data Encryption (AES-256)</p>
+                            <span class="text-green-500 font-bold">ACTIVE</span>
+                         </div>
+                         <div class="flex justify-between items-center py-1">
+                            <p class="text-sm text-gray-600">Audit Logging</p>
+                            <span class="text-green-500 font-bold">ENABLED</span>
+                         </div>
+                         <button class="w-full px-4 py-2 bg-gray-200 text-gray-700 rounded-xl text-sm hover:bg-gray-300 transition">
+                            View Security Logs
+                        </button>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- 8. Role & Permission Control (Placeholder) -->
+            <section id="roles" class="hidden active-section">
+                <h3 class="text-3xl font-extrabold text-gray-800 mb-6">🔐 Role & Permission Control</h3>
+                <div class="content-card p-6 bg-white rounded-2xl shadow-lg">
+                    <p class="text-gray-700 font-semibold mb-4">System Role Management</p>
+                    <p class="text-sm text-gray-600">Define access rights for different user roles (Teacher, Student, Admin). This section allows granular control over view, edit, and delete privileges for every module.</p>
+                    <h5 class="text-lg font-semibold text-gray-700 mt-4">Current Roles:</h5>
+                    <ul class="list-disc list-inside space-y-1 text-sm text-gray-600 ml-4 mt-2">
+                        <li>Admin: Full Access (All Modules)</li>
+                        <li>Teacher: View/Edit Assignments, View/Edit Attendance, View Analytics.</li>
+                        <li>Student: View Assignments, Submit Work, View Personal Analytics.</li>
+                    </ul>
+                    <button class="mt-4 px-4 py-2 bg-indigo-500 text-white rounded-xl text-sm hover:bg-indigo-600">Edit Role Permissions (Mock)</button>
+                </div>
+            </section>
+
+
+            <!-- 9. EduBot (Admin Assistant) -->
+            <section id="edubot" class="hidden active-section">
+                <h3 class="text-3xl font-extrabold text-gray-800 mb-6">🧠 EduBot (Admin Assistant)</h3>
+
+                <div class="content-card bg-white flex flex-col h-[60vh] rounded-2xl shadow-lg border border-indigo-100">
+                    <!-- Chat History -->
+                    <div id="chatbot-history-admin" class="flex-grow p-6 overflow-y-auto space-y-4 no-scrollbar">
+                        <!-- Initial Bot Message -->
+                        <div class="flex justify-start">
+                            <div id="initial-bot-message-admin" class="bg-indigo-100 text-indigo-900 p-3 rounded-xl rounded-tl-none max-w-xs md:max-w-md shadow-sm">
+                                Welcome, Admin! I am ready to assist with system reporting, user management, and trend analysis. What task should I run?
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Input Area -->
+                    <form id="chatbot-form-admin" class="p-4 border-t border-gray-200 flex space-x-3">
+                        <input type="text" id="chatbot-input-admin" placeholder="Generate teacher performance report for Q4..." required
+                               class="flex-grow p-3 rounded-xl border border-gray-300 focus:ring-indigo-500 focus:border-indigo-500">
+                        <button type="submit" class="p-3 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14M12 5l7 7-7 7"></path></svg>
+                        </button>
+                    </form>
+                </div>
+            </section>
+
+
+            <!-- 10. Settings -->
+            <section id="settings" class="hidden active-section">
+                <h3 class="text-3xl font-extrabold text-gray-800 mb-6">⚙️ Settings</h3>
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    
+                    <!-- Column 1: Profile Card -->
+                    <div class="content-card lg:col-span-1 bg-white p-6 rounded-2xl shadow-lg text-center">
+                        <img src="https://placehold.co/100x100/6366f1/ffffff?text=A" alt="Admin Profile" class="w-24 h-24 rounded-full object-cover mx-auto border-4 border-indigo-300 mb-4">
+                        <h4 class="text-xl font-bold text-gray-800">Admin User</h4>
+                        <p class="text-sm text-indigo-600 font-medium">System Administrator</p>
+                        
+                        <div class="mt-4 pt-4 border-t border-gray-100 text-left space-y-2">
+                            <p class="text-sm"><span class="font-semibold text-gray-600">Role ID:</span> A-001</p>
+                            <p class="text-sm"><span class="font-semibold text-gray-600">Email:</span> admin@edusync.edu</p>
+                            <button class="w-full mt-4 py-2 text-sm bg-indigo-50 text-indigo-600 rounded-xl hover:bg-indigo-100 transition">
+                                Update Admin Profile
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Column 2: Account Settings & Security -->
+                    <div class="content-card lg:col-span-2 bg-white p-8 rounded-2xl shadow-lg">
+                        <h4 class="text-2xl font-semibold text-gray-700 mb-6 border-b pb-2">Account & Security</h4>
+
+                        <form class="space-y-5">
+                            <div class="grid sm:grid-cols-2 gap-4">
+                                <div>
+                                    <label for="fullName" class="block text-sm font-medium text-gray-700 mb-1">Admin Name</label>
+                                    <input type="text" id="fullName" value="Admin User" 
+                                           class="w-full p-3 rounded-xl border border-gray-300 focus:ring-indigo-500 focus:border-indigo-500">
+                                </div>
+                                <div>
+                                    <label for="emailUpdate" class="block text-sm font-medium text-gray-700 mb-1">Email (Read Only)</label>
+                                    <input type="email" id="emailUpdate" value="admin@edusync.edu" disabled 
+                                           class="w-full p-3 rounded-xl border border-gray-200 bg-gray-50 cursor-not-allowed">
+                                </div>
+                            </div>
+                            
+                            <!-- Password Change (Mock) -->
+                            <div class="pt-4 border-t border-gray-100">
+                                <label for="newPassword" class="block text-sm font-medium text-gray-700 mb-1">New Password</label>
+                                <input type="password" id="newPassword" placeholder="Enter new password (min 8 chars)" 
+                                       class="w-full p-3 rounded-xl border border-gray-300 focus:ring-indigo-500 focus:border-indigo-500">
+                                <p class="text-xs text-gray-500 mt-1">Leave blank to keep current password.</p>
+                            </div>
+
+                            <button type="submit" onclick="alert('Profile Saved! (Mock)')" class="px-6 py-3 bg-indigo-600 text-white font-semibold rounded-xl hover:bg-indigo-700 transition">
+                                Save Profile Changes
+                            </button>
+                        </form>
+                    </div>
+
+                    <!-- Column 3: App Preferences -->
+                    <div class="content-card lg:col-span-3 bg-white p-8 rounded-2xl shadow-lg">
+                        <h4 class="text-2xl font-semibold text-gray-700 mb-6 border-b pb-2">App Preferences</h4>
+
+                        <div class="space-y-4">
+                            <!-- Theme Toggle -->
+                            <div class="flex justify-between items-center py-2 border-b border-gray-100">
+                                <p class="font-medium text-gray-700">Dark/Light Mode Theme</p>
+                                <label for="theme-toggle" class="flex items-center cursor-pointer">
+                                    <div class="relative">
+                                        <input type="checkbox" id="theme-toggle" class="hidden toggle-checkbox">
+                                        <div class="toggle-label block bg-gray-200 w-14 h-8 rounded-full shadow-inner transition duration-300"></div>
+                                        <div class="toggle-checkbox absolute left-1 top-1 bg-white w-6 h-6 rounded-full shadow transition duration-300"></div>
+                                    </div>
+                                    <span class="ml-3 text-sm text-gray-600" id="theme-status">Light</span>
+                                </label>
+                            </div>
+
+                            <!-- Alert Sensitivity Toggle -->
+                            <div class="flex justify-between items-center py-2">
+                                <p class="font-medium text-gray-700">AI Anomaly Alert Sensitivity</p>
+                                <select class="p-2 border rounded-xl text-sm">
+                                    <option>High (More Alerts)</option>
+                                    <option>Medium (Default)</option>
+                                    <option>Low (Fewer Alerts)</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </section>
+
+
+        </main>
+        
+        <!-- Footer (Optional PWA banner and Copyright) -->
+        <footer id="dashboard-footer" class="p-4 bg-white border-t border-gray-200 text-center text-xs text-gray-500 mt-auto transition-colors duration-300">
+            <div class="flex justify-center space-x-4 mb-2">
+                <a href="#" class="hover:underline">Privacy Policy</a>
+                <a href="#" class="hover:underline">Terms of Use</a>
+            </div>
+            &copy; EduSync AI 2025. All rights reserved.
+        </footer>
+    </div>
+
+    <!-- JavaScript for Dynamic Functionality and Mocks -->
+    <script>
+        const statusIndicator = document.getElementById('status-indicator');
+        const currentDatetime = document.getElementById('current-datetime');
+        const sidebar = document.getElementById('sidebar');
+        const mobileBackdrop = document.getElementById('mobile-sidebar-backdrop');
+        const activeSections = document.querySelectorAll('.active-section');
+        const sidebarLinks = document.querySelectorAll('.sidebar-link');
+        const themeToggle = document.getElementById('theme-toggle');
+        const themeStatus = document.getElementById('theme-status');
+        const welcomeText = document.getElementById('welcome-text');
+        const dashboardHeader = document.getElementById('dashboard-header');
+        const dashboardFooter = document.getElementById('dashboard-footer');
+        const contentCards = document.querySelectorAll('.content-card');
+        const notifButton = document.getElementById('notif-button');
+        const chartMocks = [document.getElementById('chart-mock-1'), document.getElementById('chart-mock-2')].filter(Boolean);
+        
+        // Admin-specific mock data
+        const teacherList = [
+            { id: 'T-001', name: 'Ms. R. Sharma', subject: 'Mathematics', classes: '3', status: 'Active' },
+            { id: 'T-002', name: 'Mr. A. Singh', subject: 'Science', classes: '4', status: 'Active' },
+            { id: 'T-003', name: 'Dr. P. Khan', subject: 'History', classes: '2', status: 'Suspended' },
+        ];
+        
+        const studentList = [
+            { roll: '001', name: 'Aarav Patel', class: '10A', grade: '88%', engagement: 'High' },
+            { roll: '004', name: 'Krutika Chincholkar', class: '12B', grade: '92%', engagement: 'Medium' },
+            { roll: '015', name: 'Gopal Singh', class: '09C', grade: '65%', engagement: 'Low' },
+            { roll: '028', name: 'Zoya Khan', class: '10A', grade: '79%', engagement: 'High' },
+        ];
+
+
+        // --- Core Functions ---
+
+        function updateDateTime() {
+            const now = new Date();
+            const dateStr = now.toLocaleDateString('en-US', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' });
+            const timeStr = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+            currentDatetime.textContent = `${dateStr} | ${timeStr}`;
+        }
+        setInterval(updateDateTime, 1000); // Update every second
+
+        /**
+         * Checks and updates the online/offline status indicator.
+         */
+        function checkOnlineStatus() {
+            const isOnline = navigator.onLine;
+            let dotColor = 'bg-red-500';
+            let statusText = 'Offline';
+            const isDark = themeToggle.checked;
+
+            if (isOnline) {
+                dotColor = 'bg-green-500';
+                statusText = 'Online';
+            } else {
+                statusText = 'Offline (Last sync failed)';
+            }
+
+            // The text color needs to adapt to the header background
+            const textColorClass = isDark ? 'text-gray-300' : 'text-gray-600';
+
+            statusIndicator.innerHTML = `
+                <span class="w-3 h-3 ${dotColor} rounded-full mr-2 shadow-md ring-2 ring-white"></span>
+                <span class="${textColorClass}">${statusText}</span>
+            `;
+
+            // Display a message in the main content if offline
+            if (!isOnline) {
+                 let offlineMessage = document.querySelector('.offline-banner');
+                 if (!offlineMessage) {
+                    offlineMessage = document.createElement('div');
+                    offlineMessage.className = "fixed bottom-0 left-0 right-0 p-3 bg-red-600 text-white text-center font-medium shadow-2xl z-50 offline-banner";
+                    offlineMessage.textContent = "⚠️ System Offline. Data changes will be queued for sync.";
+                    document.body.appendChild(offlineMessage);
+                 }
+            } else {
+                const existingMessage = document.querySelector('.offline-banner');
+                if (existingMessage) existingMessage.remove();
+            }
+        }
+
+        /**
+         * Toggles the sidebar visibility for mobile.
+         */
+        function toggleSidebar() {
+            sidebar.classList.toggle('-translate-x-full');
+            mobileBackdrop.classList.toggle('hidden');
+        }
+        
+        /**
+         * Handles navigation to show the selected main content section.
+         * @param {string} sectionId - The ID of the section to show.
+         */
+        function showSection(sectionId) {
+            // Hide all sections
+            activeSections.forEach(section => section.classList.add('hidden'));
+            
+            // Show the selected section
+            const targetSection = document.getElementById(sectionId);
+            if (targetSection) {
+                targetSection.classList.remove('hidden');
+            }
+
+            // Update active sidebar link
+            sidebarLinks.forEach(link => {
+                link.classList.remove('active', 'dark-active');
+                if (link.getAttribute('href').substring(1) === sectionId) {
+                    link.classList.add('active');
+                    // Ensure dark mode active class is applied if theme is dark
+                    if (themeToggle.checked) {
+                        link.classList.add('dark-active');
+                    }
+                }
+            });
+
+            // If navigating to user management, render the tables
+            if (sectionId === 'manage-teachers') {
+                renderTeacherList();
+            } else if (sectionId === 'manage-students') {
+                renderStudentList();
+            }
+
+            // Hide sidebar on mobile after selection
+            if (!mobileBackdrop.classList.contains('hidden')) {
+                toggleSidebar();
+            }
+        }
+
+
+        // --- Admin-Specific Functions ---
+
+        /**
+         * Renders the mock teacher list table.
+         */
+        function renderTeacherList() {
+            const tableBody = document.getElementById('teacher-list-body');
+            if (!tableBody) return;
+            tableBody.innerHTML = '';
+
+            const isDark = themeToggle.checked;
+            
+            teacherList.forEach(teacher => {
+                const statusColor = teacher.status === 'Active' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700';
+                const actionColor = teacher.status === 'Active' ? 'text-red-500' : 'text-green-500';
+                const actionText = teacher.status === 'Active' ? 'Suspend' : 'Activate';
+
+                const rowClass = isDark ? 'bg-gray-700/50 text-gray-300 border-gray-600' : 'bg-white border-gray-200';
+
+                const row = document.createElement('tr');
+                row.className = rowClass;
+                row.innerHTML = `
+                    <td class="px-3 py-3 whitespace-nowrap text-sm font-medium text-gray-900 teacher-id">${teacher.id}</td>
+                    <td class="px-3 py-3 whitespace-nowrap text-sm text-gray-900 teacher-name">${teacher.name}</td>
+                    <td class="px-3 py-3 whitespace-nowrap text-sm text-gray-500">${teacher.subject}</td>
+                    <td class="px-3 py-3 whitespace-nowrap text-sm text-gray-500">${teacher.classes}</td>
+                    <td class="px-3 py-3 whitespace-nowrap text-sm status-cell">
+                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${statusColor}">${teacher.status}</span>
+                    </td>
+                    <td class="px-3 py-3 whitespace-nowrap text-sm space-x-2">
+                        <button class="text-indigo-600 hover:text-indigo-800">Edit</button>
+                        <button onclick="mockDeleteUser('${teacher.id}')" class="${actionColor} hover:text-red-700">${actionText}</button>
+                    </td>
+                `;
+                tableBody.appendChild(row);
+
+                // Apply dark mode overrides immediately if needed
+                if (isDark) {
+                    row.querySelectorAll('.teacher-id, .teacher-name').forEach(el => el.classList.add('text-gray-100'));
+                }
+            });
+        }
+        
+        /**
+         * Renders the mock student list table.
+         */
+        function renderStudentList() {
+            const tableBody = document.getElementById('student-list-body');
+            if (!tableBody) return;
+            tableBody.innerHTML = '';
+            
+            const isDark = themeToggle.checked;
+
+            studentList.forEach(student => {
+                const gradeColor = student.grade.includes('9') ? 'text-green-600' : student.grade.includes('6') ? 'text-red-600' : 'text-yellow-600';
+                const rowClass = isDark ? 'bg-gray-700/50 text-gray-300 border-gray-600' : 'bg-white border-gray-200';
+
+                const row = document.createElement('tr');
+                row.className = rowClass;
+                row.innerHTML = `
+                    <td class="px-3 py-3 whitespace-nowrap text-sm font-medium text-gray-900 student-roll">${student.roll}</td>
+                    <td class="px-3 py-3 whitespace-nowrap text-sm text-gray-900 student-name">${student.name}</td>
+                    <td class="px-3 py-3 whitespace-nowrap text-sm text-gray-500">${student.class}</td>
+                    <td class="px-3 py-3 whitespace-nowrap text-sm font-semibold ${gradeColor}">${student.grade}</td>
+                    <td class="px-3 py-3 whitespace-nowrap text-sm text-gray-500">${student.engagement}</td>
+                    <td class="px-3 py-3 whitespace-nowrap text-sm space-x-2">
+                        <button class="text-indigo-600 hover:text-indigo-800">Edit</button>
+                        <button onclick="mockDeleteUser('${student.roll}')" class="text-red-500 hover:text-red-700">Delete</button>
+                    </td>
+                `;
+                tableBody.appendChild(row);
+
+                 // Apply dark mode overrides immediately if needed
+                if (isDark) {
+                    row.querySelectorAll('.student-roll, .student-name').forEach(el => el.classList.add('text-gray-100'));
+                }
+            });
+        }
+
+
+        /**
+         * Mocks the creation of a new teacher account.
+         */
+        function mockAddTeacher() {
+            console.log("Mock: Adding new teacher account. Refreshing list (simulated).");
+            // Simulate adding a user and refreshing the list
+            alert("New Teacher Account Created (Mock).");
+        }
+
+        /**
+         * Mocks the deletion or suspension of a user.
+         */
+        function mockDeleteUser(id) {
+            console.log(`Mock: Suspending/Deleting user ID: ${id}.`);
+            alert(`User ID ${id} status updated (Mock).`);
+            // In a real app, this would update the user's status and re-render the list.
+        }
+        
+        /**
+         * Mocks manual data synchronization.
+         */
+        function mockDataSync() {
+            const syncStatus = document.getElementById('last-sync');
+            const queueStatus = document.getElementById('offline-queue');
+            
+            syncStatus.textContent = 'Syncing...';
+            queueStatus.textContent = 'Processing...';
+
+            setTimeout(() => {
+                syncStatus.textContent = 'Just now';
+                queueStatus.textContent = '0 Pending Records';
+                queueStatus.classList.remove('text-orange-500');
+                queueStatus.classList.add('text-green-500');
+                alert("Data Synchronization Complete (Mock).");
+            }, 2000);
+        }
+
+        /**
+         * Mocks the EduBot Admin interaction.
+         */
+        document.getElementById('chatbot-form-admin').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const input = document.getElementById('chatbot-input-admin');
+            const message = input.value.trim();
+            if (!message) return;
+
+            const chatHistory = document.getElementById('chatbot-history-admin');
+            
+            // 1. Display User Message
+            const userMsgEl = document.createElement('div');
+            userMsgEl.className = 'flex justify-end';
+            userMsgEl.innerHTML = `<div class="bg-indigo-600 text-white p-3 rounded-xl rounded-br-none max-w-xs md:max-w-md shadow-md">${message}</div>`;
+            chatHistory.appendChild(userMsgEl);
+            chatHistory.scrollTop = chatHistory.scrollHeight;
+            input.value = '';
+
+            // 2. Simulate Bot Response
+            setTimeout(() => {
+                const botMsgEl = document.createElement('div');
+                botMsgEl.className = 'flex justify-start';
+                
+                let botResponse = '';
+                if (message.toLowerCase().includes('report') || message.toLowerCase().includes('performance')) {
+                    botResponse = "Generating **Teacher Performance Report for Q4**. Initial summary: 80% of teachers met the grading turnaround time goal. Report available in Performance Analytics section.";
+                } else if (message.toLowerCase().includes('inactive') || message.toLowerCase().includes('suspend')) {
+                    botResponse = "Identified 3 inactive student accounts and 1 suspended teacher account (Dr. Khan). Do you want to **delete** or **reactivate** them?";
+                } else if (message.toLowerCase().includes('sync') || message.toLowerCase().includes('system')) {
+                    botResponse = "System check complete. All services online. Local offline queue has 0 pending records. Health is stable.";
+                } else {
+                    botResponse = "Understood. Please specify an administrative task, such as 'Generate report' or 'Check system health'.";
+                }
+
+                const isDark = themeToggle.checked;
+                const botClass = isDark ? 'bg-indigo-800 text-indigo-100' : 'bg-indigo-100 text-indigo-900';
+
+                botMsgEl.innerHTML = `<div class="${botClass} p-3 rounded-xl rounded-tl-none max-w-xs md:max-w-md shadow-sm">
+                    ${botResponse}
+                </div>`;
+                chatHistory.appendChild(botMsgEl);
+                chatHistory.scrollTop = chatHistory.scrollHeight;
+            }, 1500);
+        });
+
+
+        // --- Dark Mode Theme Toggle Logic (Revised for Admin UI) ---
+        themeToggle.addEventListener('change', () => {
+            const isDark = themeToggle.checked;
+            themeStatus.textContent = isDark ? "Dark" : "Light";
+
+            // Save preference to local storage
+            localStorage.setItem('edusync-theme', isDark ? 'dark' : 'light');
+
+            // 1. Update Body (main background)
+            if (isDark) {
+                document.body.classList.add('bg-gray-900', 'text-gray-100');
+                document.body.classList.remove('bg-f7f9fc', 'text-333');
+            } else {
+                document.body.classList.add('bg-f7f9fc', 'text-333');
+                document.body.classList.remove('bg-gray-900', 'text-gray-100');
+            }
+
+            // 2. Update Major Containers: Sidebar, Header, Footer
+            const majorContainers = [sidebar, dashboardHeader, dashboardFooter].filter(Boolean);
+
+            majorContainers.forEach(el => {
+                if (isDark) {
+                    el.classList.remove('bg-white', 'bg-white/95', 'shadow-md', 'border-gray-200', 'border-indigo-200');
+                    el.classList.add('bg-gray-800', 'shadow-xl', 'border-gray-700', 'text-gray-200');
+                } else {
+                    el.classList.add('bg-white', 'shadow-md');
+                    el.classList.remove('bg-gray-800', 'shadow-xl', 'border-gray-700', 'text-gray-200');
+                    if (el === sidebar) el.classList.add('border-indigo-200');
+                }
+            });
+            
+            // Handle Header transparency swap
+            dashboardHeader.classList.toggle('bg-white/95', !isDark);
+            dashboardHeader.classList.toggle('bg-gray-800/95', isDark);
+
+            // 3. Update Cards (elements with .content-card class)
+            contentCards.forEach(card => {
+                if (isDark) {
+                    // Remove all light/indigo variants
+                    card.classList.remove('bg-white', 'bg-indigo-50', 'border-indigo-100', 'border-teal-100', 'border-yellow-100', 'border-pink-100', 'border-red-100', 'border-green-100', 'shadow-lg');
+                    card.classList.add('bg-gray-700', 'border-gray-600', 'shadow-2xl');
+                } else {
+                    card.classList.add('bg-white');
+                    card.classList.remove('bg-gray-700', 'border-gray-600', 'shadow-2xl');
+                    
+                    // Reset primary background color based on original context
+                    if (card.classList.contains('bg-indigo-50')) {
+                        card.classList.add('bg-indigo-50');
+                    }
+                    if (card.classList.contains('bg-gray-50')) {
+                        card.classList.add('bg-gray-50');
+                    }
+                }
+            });
+            
+            // 4. Update Sidebar Links (Text & Active State)
+            document.querySelectorAll('.sidebar-link').forEach(link => {
+                if (isDark) {
+                    link.classList.remove('text-gray-700', 'hover:bg-indigo-50');
+                    link.classList.add('text-gray-300', 'hover:bg-gray-700');
+                    if (link.classList.contains('active')) {
+                         link.classList.add('dark-active');
+                    }
+                } else {
+                    link.classList.add('text-gray-700', 'hover:bg-indigo-50');
+                    link.classList.remove('text-gray-300', 'hover:bg-gray-700', 'dark-active');
+                }
+            });
+            
+            // 5. Tables: Thead, Tbody rows, and borders
+            document.querySelectorAll('table').forEach(table => {
+                const thead = table.querySelector('thead');
+                if (thead) {
+                    thead.classList.toggle('bg-gray-50', !isDark);
+                    thead.classList.toggle('bg-gray-600', isDark);
+                }
+                
+                table.querySelectorAll('tbody tr').forEach(row => {
+                    row.classList.toggle('bg-white', !isDark);
+                    row.classList.toggle('border-gray-200', !isDark);
+                    row.classList.toggle('bg-gray-700/50', isDark);
+                    row.classList.toggle('border-gray-600', isDark);
+                });
+            });
+
+            // Re-render lists to apply row-level dark mode styles correctly
+            if (document.getElementById('manage-teachers')?.classList.contains('active-section')) {
+                renderTeacherList();
+            }
+            if (document.getElementById('manage-students')?.classList.contains('active-section')) {
+                renderStudentList();
+            }
+
+            // 6. Generic Background Overrides for list items/placeholders
+            document.querySelectorAll('.bg-gray-50, .border-gray-100').forEach(el => {
+                if (isDark) {
+                     el.classList.remove('bg-gray-50', 'border-gray-100');
+                     el.classList.add('bg-gray-700/50', 'border-gray-700');
+                } else {
+                    if (el.classList.contains('bg-gray-700/50')) { // Only restore if it was previously set to dark
+                        el.classList.add('bg-gray-50', 'border-gray-100');
+                        el.classList.remove('bg-gray-700/50', 'border-gray-700');
+                    }
+                }
+            });
+
+
+            // 7. Inputs, Textareas, Selects
+            document.querySelectorAll('input:not([type="checkbox"]), textarea, select').forEach(input => {
+                input.classList.toggle('bg-gray-600', isDark);
+                input.classList.toggle('border-gray-500', isDark);
+                input.classList.toggle('text-gray-100', isDark);
+
+                input.classList.toggle('bg-white', !isDark);
+                input.classList.toggle('border-gray-300', !isDark);
+                input.classList.toggle('text-gray-900', !isDark);
+                if(input.disabled) {
+                    input.classList.toggle('bg-gray-50', !isDark);
+                    input.classList.toggle('bg-gray-700', isDark);
+                }
+            });
+
+            // 8. Notification Icon, EduBot Message, AI Reminder containers
+            [notifButton, document.getElementById('initial-bot-message-admin')].filter(Boolean).forEach(el => {
+                if (el.id === 'notif-button') {
+                     el.classList.toggle('bg-gray-100', !isDark);
+                     el.classList.toggle('text-gray-600', !isDark);
+                     el.classList.toggle('bg-gray-700', isDark);
+                     el.classList.toggle('text-gray-300', isDark);
+                } else {
+                     el.classList.toggle('bg-indigo-100', !isDark);
+                     el.classList.toggle('text-indigo-900', !isDark);
+                     el.classList.toggle('bg-indigo-800', isDark);
+                     el.classList.toggle('text-indigo-100', isDark);
+                }
+            });
+
+            // 9. Explicitly handle light-colored non-card backgrounds (Charts)
+            chartMocks.forEach(el => {
+                if (el) {
+                    el.classList.toggle('bg-gray-50', !isDark);
+                    el.classList.toggle('border-gray-200', !isDark);
+                    el.classList.toggle('bg-gray-600/50', isDark);
+                    el.classList.toggle('border-gray-600', isDark);
+                }
+            });
+            
+            // 10. Global Primary Text Sweep
+            document.querySelectorAll('h2, h3, h4, p, span, td, label').forEach(el => {
+                // Skip highly colored elements (e.g., green/red status badges, indigo headers)
+                if (el.closest('.bg-red-100, .bg-green-100, .bg-yellow-100, .bg-indigo-100, .bg-pink-100, .text-indigo-600, button, a, #sidebar h1')) return;
+
+                if (isDark) {
+                    if (el.classList.contains('text-gray-900') || el.classList.contains('text-gray-800') || el.classList.contains('text-gray-700')) {
+                        el.classList.add('text-gray-100');
+                    } else if (el.classList.contains('text-gray-600') || el.classList.contains('text-gray-500')) {
+                        el.classList.add('text-gray-300');
+                    }
+                    el.classList.remove('text-gray-900', 'text-gray-800', 'text-gray-700', 'text-gray-600', 'text-gray-500');
+                } else {
+                    if (el.classList.contains('text-gray-100')) {
+                        el.classList.add('text-gray-900');
+                    } else if (el.classList.contains('text-gray-300')) {
+                         el.classList.add('text-gray-600');
+                    }
+                    el.classList.remove('text-gray-100', 'text-gray-300');
+                }
+            });
+
+
+            // Re-run status check to update indicator text color against the new header background
+            checkOnlineStatus();
+        });
+
+        function handleLogout() {
+            // Clear role and redirect to login page
+            localStorage.removeItem('edusync-user-role'); 
+            window.location.href = 'login.html';
+        }
+
+        // --- Initial Load ---
+        window.onload = function() {
+            updateDateTime();
+            checkOnlineStatus();
+            window.addEventListener('online', checkOnlineStatus);
+            window.addEventListener('offline', checkOnlineStatus);
+
+            // Apply theme on load
+            if (localStorage.getItem('edusync-theme') === 'dark') {
+                themeToggle.checked = true;
+                themeToggle.dispatchEvent(new Event('change'));
+            }
+
+            // Set up initial navigation state
+            showSection('overview');
+
+            // Set up sidebar link handlers
+            sidebarLinks.forEach(link => {
+                link.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const sectionId = link.getAttribute('href').substring(1);
+                    showSection(sectionId);
+                });
+            });
+            
+            // Re-apply active class after potential theme change
+             if (themeToggle.checked) {
+                 document.querySelector('.sidebar-link.active')?.classList.add('dark-active');
+            }
+        };
+    </script>
+</body>
+</html>

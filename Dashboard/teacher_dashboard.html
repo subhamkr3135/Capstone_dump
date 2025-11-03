@@ -1,0 +1,1036 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EduSync AI — Teacher Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+        
+        .sidebar-link.active { background-color: #e0e7ff; color: #4f46e5; font-weight: 600; border-left-color: #4f46e5; }
+        .sidebar-link.dark-active { background-color: #4338CA !important; color: #ffffff !important; border-left-color: #818CF8 !important; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        
+        /* Utility styles for Dark Mode consistency */
+        body.dark { background-color: #111827; color: #d1d5db; }
+        .dark #sidebar { background-color: #1F2937; border-color: #374151; }
+        .dark #dashboard-header { background-color: rgba(31, 41, 55, 0.95); box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.5); }
+        .dark .content-card { background-color: #374151; border-color: #4B5563; }
+        .dark .text-gray-800, .dark .text-gray-700, .dark .text-gray-900, .dark h2, .dark h3 { color: #F3F4F6 !important; }
+        .dark .text-gray-500, .dark .text-gray-600 { color: #9CA3AF !important; }
+        .dark table thead { background-color: #4B5563 !important; }
+        .dark table tbody tr { background-color: #374151 !important; border-color: #4B5563; }
+        .dark input, .dark textarea, .dark select { background-color: #4B5563; border-color: #6B7280; color: #F3F4F6; }
+        
+        /* Dark mode for specific list items/badges */
+        .dark .bg-gray-50 { background-color: #374151 !important; }
+        .dark .bg-white { background-color: #2D3748 !important; }
+        .dark .bg-indigo-50 { background-color: #4338CA !important; }
+        .dark .bg-yellow-50 { background-color: #4B5563 !important; }
+        
+        /* Dark mode specific chat styles */
+        .dark .bg-indigo-100 { background-color: #4338CA !important; }
+        .dark .text-indigo-900 { color: #E0E7FF !important; }
+
+        /* Dark mode settings toggle dot position */
+        body.dark .dot { transform: translateX(110%); background-color: #F3F4F6; }
+        body.dark .dot-bg { background-color: #4F46E5 !important; }
+
+        /* FIX: Ensure header badge is visible in dark mode */
+        body.dark #dashboard-header .bg-indigo-100 { 
+            background-color: #3730A3 !important; /* Deep Indigo */
+            color: #E0E7FF !important; /* Light Text */
+        }
+        
+        /* Custom toggle switch styling (needed because Tailwind doesn't handle all state-based class changes easily) */
+        .toggle-checkbox:checked { right: 0; background-color: #4f46e5; }
+        .toggle-checkbox:checked + .toggle-label { background-color: #a5b4fc; }
+
+        /* --- BEGIN AI ALERT/INFO BOX DARK MODE FIXES --- */
+
+        /* 1. Primary Indigo Alerts (AI Recommendation/Reminder containers, bg-indigo-100/50) */
+        body.dark .bg-indigo-100,
+        body.dark .bg-indigo-50 {
+            background-color: #312E81 !important; /* Deeper Indigo for Dark Mode */
+            border-color: #4F46E5 !important;
+        }
+
+        /* 2. Target text colors within the indigo containers */
+        body.dark .bg-indigo-100 p,
+        body.dark .bg-indigo-50 p,
+        body.dark .bg-indigo-100 h4,
+        body.dark .bg-indigo-50 h4,
+        body.dark .bg-indigo-100 .text-indigo-800,
+        body.dark .bg-indigo-50 .text-indigo-700,
+        body.dark .bg-indigo-50 .text-indigo-600 {
+            color: #C7D2FE !important; /* Light Indigo text for contrast */
+        }
+
+        /* 3. Pink Alert (Attendance AI Insight, bg-pink-100) */
+        body.dark .bg-pink-100 { 
+            background-color: #831843 !important; /* Deep pink/maroon */
+            border-color: #BE185D !important;
+            color: #FBCFE8 !important; 
+        }
+        body.dark .bg-pink-100 p, body.dark .bg-pink-100 .font-semibold {
+            color: #FBCFE8 !important;
+        }
+        
+        /* --- END AI ALERT/INFO BOX DARK MODE FIXES --- */
+    </style>
+</head>
+<body class="min-h-screen flex flex-col transition-colors duration-300">
+    <!-- The theme-toggle checkbox below is now for the settings pane, but we use it as the source of truth -->
+    <input type="checkbox" id="theme-toggle" class="hidden"> 
+
+    <!-- Mobile Sidebar Toggle -->
+    <div id="mobile-sidebar-backdrop" class="fixed inset-0 bg-gray-900 bg-opacity-50 z-40 hidden md:hidden" onclick="toggleSidebar()"></div>
+
+    <!-- Sidebar Navigation Menu -->
+    <aside id="sidebar" class="fixed top-0 left-0 h-full w-64 bg-white shadow-xl z-50 transform -translate-x-full md:translate-x-0 transition-transform duration-300 flex flex-col border-r border-indigo-200">
+        <div class="p-6 border-b border-indigo-200">
+            <h1 class="text-2xl font-extrabold text-indigo-600 flex items-center">
+                <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-4 1 5-2 1-4zm-9.75 3h14v-2h-14v2zM12 10a5 5 0 110 10a5 5 0 010-10z"></path></svg>
+                EduSync AI
+            </h1>
+        </div>
+        
+        <nav class="flex-grow p-4 space-y-2 no-scrollbar overflow-y-auto">
+            <a href="#overview" class="sidebar-link active block px-4 py-3 rounded-xl flex items-center space-x-3 text-gray-700 hover:bg-indigo-50 border-l-4 border-transparent transition duration-150">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3"></path></svg>
+                <span>Dashboard Overview</span>
+            </a>
+            <a href="#assignments" class="sidebar-link block px-4 py-3 rounded-xl flex items-center space-x-3 text-gray-700 hover:bg-indigo-50 border-l-4 border-transparent transition duration-150">
+                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path></svg>
+                <span>Assignments Manager</span>
+            </a>
+            <a href="#attendance" class="sidebar-link block px-4 py-3 rounded-xl flex items-center space-x-3 text-gray-700 hover:bg-indigo-50 border-l-4 border-transparent transition duration-150">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354l.001.001a.75.75 0 011.06 0l7.5 7.5a.75.75 0 01-1.06 1.06l-6.97-6.97-6.97 6.97a.75.75 0 01-1.06-1.06l7.5-7.5zM12 15a.75.75 0 01.75-.75h6.5a.75.75 0 010 1.5h-6.5A.75.75 0 0112 15zM12 19.5a.75.75 0 01.75-.75h6.5a.75.75 0 010 1.5h-6.5a.75.75 0 01-.75-.75zM18.5 7.5a.5.5 0 100-1 .5.5 0 000 1zM5.5 7.5a.5.5 0 100-1 .5.5 0 000 1z"></path></svg>
+                <span>Attendance Tracker</span>
+            </a>
+             <a href="#analytics" class="sidebar-link block px-4 py-3 rounded-xl flex items-center space-x-3 text-gray-700 hover:bg-indigo-50 border-l-4 border-transparent transition duration-150">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 8v8m-4-5v5m-4-2v2m4-2a2 2 0 01-2 2H6a2 2 0 01-2-2V6a2 2 0 012-2h4a2 2 0 012 2v10z"></path></svg>
+                <span>Performance Analytics</span>
+            </a>
+            <a href="#timetable" class="sidebar-link block px-4 py-3 rounded-xl flex items-center space-x-3 text-gray-700 hover:bg-indigo-50 border-l-4 border-transparent transition duration-150">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                <span>Timetable / Schedule</span>
+            </a>
+            <a href="#messages" class="sidebar-link block px-4 py-3 rounded-xl flex items-center space-x-3 text-gray-700 hover:bg-indigo-50 border-l-4 border-transparent transition duration-150">
+                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 4v-4z"></path></svg>
+                <span>Announcements & Messages</span>
+            </a>
+            <a href="#edubot" class="sidebar-link block px-4 py-3 rounded-xl flex items-center space-x-3 text-gray-700 hover:bg-indigo-50 border-l-4 border-transparent transition duration-150">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9h-3M8 9v6m-4 3h16a2 2 0 002-2v-4a2 2 0 00-2-2H4a2 2 0 00-2 2v4a2 2 0 002 2z"></path></svg>
+                <span>EduBot (AI Assistant)</span>
+            </a>
+            <a href="#settings" class="sidebar-link block px-4 py-3 rounded-xl flex items-center space-x-3 text-gray-700 hover:bg-indigo-50 border-l-4 border-transparent transition duration-150">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317C10.73 3.633 11.52 3.633 11.925 4.317L14.47 8.573a1 1 0 00.817.466h4.55a1 1 0 01.908 1.45L18.15 17.584a1 1 0 01-.817.466h-4.55a1 1 0 00-.817.466L10.325 21.683c-.405.684-1.195.684-1.6 0L5.78 17.584a1 1 0 00-.817-.466H.413a1 1 0 01-.908-1.45L3.85 9.04a1 1 0 01.817-.466h4.55a1 1 0 00.817-.466l1.625-3.25z"></path></svg>
+                <span>Settings / Profile</span>
+            </a>
+        </nav>
+        
+        <div class="p-6 border-t border-gray-200">
+            <button onclick="handleLogout()" class="w-full py-2 bg-red-100 text-red-600 font-semibold rounded-xl flex items-center justify-center hover:bg-red-200 transition duration-150">
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
+                Logout
+            </button>
+        </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <div class="flex-1 md:ml-64 flex flex-col transition-all duration-300">
+        
+        <!-- Dashboard Header -->
+        <header id="dashboard-header" class="sticky top-0 z-30 bg-white/95 backdrop-blur-sm shadow-md p-4 flex items-center justify-between transition-colors duration-300">
+            <div class="flex items-center">
+                <!-- Mobile Menu Button -->
+                <button class="md:hidden mr-4 text-gray-600 hover:text-indigo-600" onclick="toggleSidebar()">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+                </button>
+                <h2 id="welcome-text" class="text-xl font-bold text-gray-800">Welcome, Ms. Sharma 👋</h2>
+            </div>
+
+            <div class="flex items-center space-x-4">
+                
+                <!-- Date/Time Display -->
+                <span id="current-datetime" class="hidden sm:inline text-sm text-gray-500 font-medium"></span>
+                
+                <!-- Subject Info -->
+                <span class="hidden sm:inline text-sm bg-indigo-100 text-indigo-700 px-3 py-1 rounded-full font-semibold">
+                    Mathematics | Grade 10
+                </span>
+                
+                <!-- Status Indicator (Online/Offline) -->
+                <div id="status-indicator" class="flex items-center text-sm font-medium">
+                    <!-- JS will update the text and dot color -->
+                </div>
+                
+                <!-- Notification Icon -->
+                <button id="notif-button" class="relative p-2 text-gray-600 bg-gray-100 rounded-full hover:bg-indigo-100 hover:text-indigo-600 transition">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path></svg>
+                    <!-- New notifications badge for submissions/messages -->
+                    <span class="absolute top-0 right-0 block h-3 w-3 rounded-full ring-2 ring-white bg-red-500"></span>
+                </button>
+                
+                <!-- Profile Photo -->
+                <img src="https://placehold.co/40x40/6366f1/ffffff?text=MS" alt="Ms. Sharma Profile" class="w-10 h-10 rounded-full object-cover border-2 border-indigo-400">
+            </div>
+        </header>
+
+        <!-- Main Content Sections (Scrollable) -->
+        <main class="p-6 md:p-8 space-y-10 flex-1">
+            
+            <!-- 1. Dashboard Overview -->
+            <section id="overview" class="active-section">
+                <h3 class="text-3xl font-extrabold text-gray-800 mb-6">Dashboard Overview</h3>
+                <p class="mb-6 italic text-gray-600">"A good teacher inspires hope, ignites the imagination, and instills a love of learning."</p>
+
+                <!-- Quick Stats Cards -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    
+                    <!-- Card 1: Total Students -->
+                    <div class="content-card bg-white p-6 rounded-2xl shadow-lg border border-indigo-100 transition hover:shadow-xl">
+                        <p class="text-sm text-gray-500 mb-1">Total Students</p>
+                        <div class="flex items-center justify-between">
+                            <span class="text-4xl font-bold text-indigo-600">30</span>
+                            <div class="w-16 h-16 rounded-full bg-indigo-50 flex items-center justify-center font-bold text-indigo-600">
+                                🧑‍🎓
+                            </div>
+                        </div>
+                        <p class="text-xs text-green-500 mt-2">Grade 10, Section A</p>
+                    </div>
+
+                    <!-- Card 2: Assignments Pending Review -->
+                    <div class="content-card bg-white p-6 rounded-2xl shadow-lg border border-red-100 transition hover:shadow-xl">
+                        <p class="text-sm text-gray-500 mb-1">Pending Review</p>
+                        <div class="flex items-center justify-between">
+                            <span class="text-4xl font-bold text-red-600">12</span>
+                            <div class="w-16 h-16 rounded-full bg-red-50 flex items-center justify-center font-bold text-red-600">
+                                📝
+                            </div>
+                        </div>
+                        <p class="text-xs text-orange-500 mt-2">Last Due: Oct 18</p>
+                    </div>
+
+                    <!-- Card 3: Class Attendance Rate -->
+                    <div class="content-card bg-white p-6 rounded-2xl shadow-lg border border-teal-100 transition hover:shadow-xl">
+                        <p class="text-sm text-gray-500 mb-1">Attendance Rate (Today)</p>
+                        <div class="flex items-center justify-between">
+                            <span class="text-4xl font-bold text-teal-600">93%</span>
+                            <div class="w-16 h-16 rounded-full bg-teal-50 flex items-center justify-center font-bold text-teal-600">
+                                🗓️
+                            </div>
+                        </div>
+                        <p class="text-xs text-gray-500 mt-2">28 Present / 2 Absent</p>
+                    </div>
+
+                    <!-- Card 4: AI Insights -->
+                    <div class="content-card bg-white p-6 rounded-2xl shadow-lg border border-pink-100 transition hover:shadow-xl">
+                        <p class="text-sm text-gray-500 mb-1">AI Performance Insight</p>
+                        <p class="text-lg font-semibold text-gray-700 mt-1">"5 students are struggling with **Algebra**."</p>
+                        <button class="text-xs text-pink-600 mt-4 underline font-medium" onclick="showSection('analytics')">View intervention plan</button>
+                    </div>
+                </div>
+
+                <!-- Quick Actions Panel -->
+                <div class="content-card mt-8 bg-indigo-50 p-6 rounded-2xl border border-indigo-200">
+                    <h4 class="text-lg font-semibold text-indigo-700 mb-4">Quick Actions</h4>
+                    <div class="flex flex-wrap gap-4">
+                        <button class="px-4 py-2 bg-indigo-600 text-white rounded-xl shadow-md hover:bg-indigo-700 transition" onclick="showSection('attendance')">
+                            Mark Today's Attendance
+                        </button>
+                        <button class="px-4 py-2 bg-white text-indigo-600 border border-indigo-300 rounded-xl shadow-md hover:bg-indigo-100 transition" onclick="showSection('assignments')">
+                            Create New Assignment
+                        </button>
+                        <button class="px-4 py-2 bg-white text-indigo-600 border border-indigo-300 rounded-xl shadow-md hover:bg-indigo-100 transition" onclick="showSection('edubot')">
+                            Generate Quiz Questions
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 2. Assignments Manager -->
+            <section id="assignments" class="hidden active-section">
+                <h3 class="text-3xl font-extrabold text-gray-800 mb-6">📋 Assignments Manager</h3>
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    
+                    <!-- Assignment Creation Form -->
+                    <div class="content-card lg:col-span-1 bg-white p-6 rounded-2xl shadow-lg space-y-4">
+                        <h4 class="text-xl font-semibold text-gray-700">Create New Assignment</h4>
+                        <input type="text" placeholder="Title (e.g., Chapter 4 Test)" class="w-full p-3 rounded-xl border border-gray-300">
+                        <input type="date" class="w-full p-3 rounded-xl border border-gray-300">
+                        <textarea rows="4" placeholder="Instructions/Criteria" class="w-full p-3 rounded-xl border border-gray-300"></textarea>
+                        
+                        <button class="w-full px-4 py-3 bg-teal-500 text-white font-semibold rounded-xl hover:bg-teal-600 transition">
+                            Post Assignment
+                        </button>
+
+                        <div class="pt-4 border-t border-gray-100">
+                            <button onclick="mockAIGenerateAssignment()" class="w-full text-sm py-2 bg-indigo-100 text-indigo-700 rounded-lg hover:bg-indigo-200 transition">
+                                🤖 AI Helper: Generate Questions
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Submissions & Grading Table -->
+                    <div class="content-card lg:col-span-2 bg-white p-6 rounded-2xl shadow-lg space-y-4">
+                        <h4 class="text-xl font-semibold text-gray-700">Recent Submissions (Quadratic Equations)</h4>
+                        
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full divide-y divide-gray-200">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Roll No</th>
+                                        <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Student Name</th>
+                                        <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Submitted</th>
+                                        <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">AI Grade</th>
+                                        <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-gray-200">
+                                    <tr>
+                                        <td class="px-3 py-3 whitespace-nowrap text-sm font-medium text-gray-900 roll-no">001</td>
+                                        <td class="px-3 py-3 whitespace-nowrap text-sm text-gray-900 student-name">Aarav Patel</td>
+                                        <td class="px-3 py-3 whitespace-nowrap text-sm text-gray-500"><span class="text-green-500">On Time</span></td>
+                                        <td class="px-3 py-3 whitespace-nowrap text-sm font-semibold text-green-600">92%</td>
+                                        <td class="px-3 py-3 whitespace-nowrap text-sm"><button class="text-indigo-600 hover:text-indigo-800">Review</button></td>
+                                    </tr>
+                                    <tr>
+                                        <td class="px-3 py-3 whitespace-nowrap text-sm font-medium text-gray-900 roll-no">015</td>
+                                        <td class="px-3 py-3 whitespace-nowrap text-sm text-gray-900 student-name">Krutika Chincholkar</td>
+                                        <td class="px-3 py-3 whitespace-nowrap text-sm text-gray-500"><span class="text-red-500">2h Late</span></td>
+                                        <td class="px-3 py-3 whitespace-nowrap text-sm font-semibold text-yellow-600">N/A</td>
+                                        <td class="px-3 py-3 whitespace-nowrap text-sm"><button class="text-green-600 hover:text-green-800" onclick="mockAIGrade(this)">Grade Now</button></td>
+                                    </tr>
+                                    <tr>
+                                        <td class="px-3 py-3 whitespace-nowrap text-sm font-medium text-gray-900 roll-no">028</td>
+                                        <td class="px-3 py-3 whitespace-nowrap text-sm text-gray-900 student-name">Zoya Khan</td>
+                                        <td class="px-3 py-3 whitespace-nowrap text-sm text-gray-500">On Time</td>
+                                        <td class="px-3 py-3 whitespace-nowrap text-sm font-semibold text-green-600">88%</td>
+                                        <td class="px-3 py-3 whitespace-nowrap text-sm"><button class="text-indigo-600 hover:text-indigo-800">Review</button></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 3. Attendance Tracker -->
+            <section id="attendance" class="hidden active-section">
+                <h3 class="text-3xl font-extrabold text-gray-800 mb-6">🧮 Attendance Tracker (Oct 11, 2025)</h3>
+                
+                <div class="content-card bg-white p-6 rounded-2xl shadow-lg space-y-6">
+                    
+                    <div class="flex flex-col sm:flex-row justify-between items-center pb-4 border-b border-gray-100">
+                        <p id="attendance-summary" class="text-lg font-semibold text-gray-700 mb-3 sm:mb-0">Summary: Loading...</p>
+                        <div class="flex space-x-3">
+                            <button onclick="markAll('P')" class="px-4 py-2 bg-green-500 text-white rounded-xl text-sm hover:bg-green-600">Mark All Present</button>
+                            <button onclick="markAll('A')" class="px-4 py-2 bg-gray-500 text-white rounded-xl text-sm hover:bg-gray-600">Reset</button>
+                        </div>
+                    </div>
+
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200" id="attendance-table">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Roll No</th>
+                                    <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Student Name</th>
+                                    <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                                    <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-200">
+                                <!-- Dynamic rows populated by renderAttendanceTable() -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                
+                <div class="p-4 mt-6 bg-pink-100 text-pink-800 rounded-xl border border-pink-300">
+                    <p class="font-semibold">🤖 AI Attendance Insight:</p>
+                    <p class="text-sm">3 students (Gopal, Zoya, Deepak) have 5+ absences this month. Consider sending a personalized message to their guardians.</p>
+                </div>
+            </section>
+
+
+            <!-- 4. Performance Analytics -->
+            <section id="analytics" class="hidden active-section">
+                <h3 class="text-3xl font-extrabold text-gray-800 mb-6">📊 Performance Analytics (Class Summary)</h3>
+                
+                <div class="grid lg:grid-cols-2 gap-6">
+                    <div class="content-card bg-white p-6 rounded-2xl shadow-lg">
+                        <h4 class="text-xl font-semibold text-gray-700 mb-4">Class Average Trend Over Time</h4>
+                        <div id="chart-mock-1" class="bg-gray-50 h-64 flex items-center justify-center rounded-lg border border-gray-200 text-gray-500">
+                            [Mock Line Graph: Class Avg (85%) vs. Goal (90%)]
+                        </div>
+                    </div>
+                    
+                    <div class="content-card bg-white p-6 rounded-2xl shadow-lg">
+                        <h4 class="text-xl font-semibold text-gray-700 mb-4">Assignment Submission Rate</h4>
+                        <div id="chart-mock-2" class="bg-gray-50 h-64 flex items-center justify-center rounded-lg border border-gray-200 text-gray-500">
+                            [Mock Pie Chart: On Time (80%) / Late (10%) / Missing (10%)]
+                        </div>
+                    </div>
+                </div>
+
+                <div class="p-4 bg-indigo-100 text-indigo-800 rounded-xl border border-indigo-300 mt-6">
+                    <p class="font-semibold">🎯 AI Recommendation:</p>
+                    <p class="text-sm">The class average improved by **10%** since last month, showing efficacy of the recent Quadratic Equations unit. Focus remedial efforts on the 5 identified underperforming students in Algebra.</p>
+                </div>
+            </section>
+            
+            <!-- 5. Timetable / Schedule -->
+            <section id="timetable" class="hidden active-section">
+                <h3 class="text-3xl font-extrabold text-gray-800 mb-6">🗓️ Timetable & Schedule</h3>
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    
+                    <!-- Daily Schedule -->
+                    <div class="content-card lg:col-span-2 bg-white p-6 rounded-2xl shadow-lg">
+                        <h4 class="text-xl font-semibold text-gray-700 mb-4 flex justify-between items-center">
+                            Today's Classes (Tuesday)
+                            <span class="text-sm text-indigo-500 font-medium">Room B-204</span>
+                        </h4>
+                        
+                        <div class="space-y-3">
+                            <!-- Class 1 -->
+                            <div class="flex items-center space-x-4 p-3 bg-indigo-50 rounded-xl border-l-4 border-indigo-500 timetable-row">
+                                <span class="text-sm font-bold text-gray-600 w-20 timetable-time">08:30 - 09:30</span>
+                                <div>
+                                    <p class="font-medium text-gray-900 timetable-subject">Grade 9: Geometry</p>
+                                    <p class="text-xs text-indigo-600">Activity: 3D Shapes Introduction</p>
+                                </div>
+                            </div>
+
+                            <!-- Class 2 -->
+                            <div class="flex items-center space-x-4 p-3 bg-white rounded-xl border-l-4 border-green-500 shadow-sm timetable-row">
+                                <span class="text-sm font-bold text-gray-600 w-20 timetable-time">09:30 - 10:30</span>
+                                <div>
+                                    <p class="font-medium text-gray-900 timetable-subject">Grade 10: Mathematics</p>
+                                    <p class="text-xs text-green-600">Lecture: Linear Equations Review</p>
+                                </div>
+                            </div>
+                            
+                            <!-- Class 3 -->
+                            <div class="flex items-center space-x-4 p-3 bg-white rounded-xl border-l-4 border-yellow-500 shadow-sm timetable-row">
+                                <span class="text-sm font-bold text-gray-600 w-20 timetable-time">10:45 - 11:45</span>
+                                <div>
+                                    <p class="font-medium text-gray-900 timetable-subject">Grade 12: Calculus</p>
+                                    <p class="text-xs text-yellow-600">Review: Exam Prep Session</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Deadlines and AI Reminder -->
+                    <div class="lg:col-span-1 space-y-6">
+                        <div class="content-card bg-white p-6 rounded-2xl shadow-lg border border-red-100">
+                            <h4 class="text-xl font-semibold text-gray-700 mb-4">Upcoming Meetings/Deadlines</h4>
+                            <ul class="space-y-3">
+                                <li class="text-sm p-2 rounded bg-red-50 border-l-2 border-red-500">
+                                    <p class="font-medium text-red-800">Parent-Teacher Meeting</p>
+                                    <p class="text-xs text-red-600">Time: 16:00 (Today)</p>
+                                </li>
+                                <li class="text-sm p-2 rounded bg-gray-50 border-l-2 border-gray-300 timetable-list-item">
+                                    <p class="font-medium text-gray-800">Faculty Training</p>
+                                    <p class="text-xs text-gray-600">Date: Oct 28</p>
+                                </li>
+                            </ul>
+                        </div>
+                        
+                        <!-- AI Reminder -->
+                        <div class="p-4 bg-indigo-50 rounded-xl border border-indigo-300">
+                            <p class="font-semibold text-indigo-700 mb-1">🤖 AI Reminder</p>
+                            <p class="text-sm text-indigo-600">**Grade 10** assignment submissions close at 17:00. Ensure you have marked attendance before leaving for the day.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 6. Announcements & Messages -->
+            <section id="messages" class="hidden active-section">
+                <h3 class="text-3xl font-extrabold text-gray-800 mb-6">💬 Announcements & Messages</h3>
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    
+                    <!-- Post Announcement -->
+                    <div class="content-card lg:col-span-1 bg-white p-6 rounded-2xl shadow-lg space-y-4">
+                        <h4 class="text-xl font-semibold text-gray-700">Post New Announcement</h4>
+                        <select class="w-full p-3 rounded-xl border border-gray-300">
+                            <option>To: Grade 10 - All Students</option>
+                            <option>To: Grade 9 - All Students</option>
+                            <option>To: Selected Students (Needs Improvement)</option>
+                        </select>
+                        <textarea rows="4" placeholder="Draft your message..." id="announcement-input" class="w-full p-3 rounded-xl border border-gray-300"></textarea>
+                        
+                        <button onclick="mockAIGenerateMessage()" class="w-full text-sm py-2 bg-indigo-100 text-indigo-700 rounded-lg hover:bg-indigo-200 transition mb-2">
+                            🤖 AI: Draft Polite Reminder
+                        </button>
+
+                        <button class="w-full px-4 py-3 bg-teal-500 text-white font-semibold rounded-xl hover:bg-teal-600 transition">
+                            Post Announcement
+                        </button>
+                    </div>
+                    
+                    <!-- Message Feed -->
+                    <div class="content-card lg:col-span-2 bg-white p-6 rounded-2xl shadow-lg space-y-4">
+                        <h4 class="text-xl font-semibold text-gray-700 border-b pb-2">Recent Student Messages</h4>
+
+                        <div class="space-y-4 overflow-y-auto h-96 no-scrollbar">
+                            <!-- Message 1 -->
+                            <div class="p-3 bg-gray-50 rounded-xl border-l-4 border-yellow-500">
+                                <p class="font-semibold text-gray-900">Aarav Patel (Roll 001)</p>
+                                <p class="text-sm text-gray-700 italic">"I had trouble uploading my file due to network issues. Can I email it?"</p>
+                                <button class="mt-2 text-xs text-indigo-600 hover:underline">Reply / Auto-Draft</button>
+                            </div>
+                            <!-- Message 2 -->
+                            <div class="p-3 bg-gray-50 rounded-xl border-l-4 border-green-500">
+                                <p class="font-semibold text-gray-900">Zoya Khan (Roll 028)</p>
+                                <p class="text-sm text-gray-700">"Thank you for the detailed feedback on my last test!"</p>
+                                <span class="text-xs text-gray-500 ml-2">Read</span>
+                            </div>
+                        </div>
+
+                        <div class="pt-4 border-t border-gray-100">
+                            <p class="text-sm text-gray-500">Inbox Sync Status: All messages cached. (Last synced: 1 min ago)</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 7. EduBot (AI Assistant) -->
+            <section id="edubot" class="hidden active-section">
+                <h3 class="text-3xl font-extrabold text-gray-800 mb-6">🧠 EduBot (Teacher's AI Assistant)</h3>
+
+                <div class="content-card bg-white flex flex-col h-[60vh] rounded-2xl shadow-lg border border-indigo-100">
+                    <!-- Chat History -->
+                    <div id="chatbot-history-teacher" class="flex-grow p-6 overflow-y-auto space-y-4 no-scrollbar">
+                        <!-- Initial Bot Message -->
+                        <div class="flex justify-start">
+                            <div id="initial-bot-message-teacher" class="bg-indigo-100 text-indigo-900 p-3 rounded-xl rounded-tl-none max-w-xs md:max-w-md shadow-sm">
+                                Welcome, Ms. Sharma! How can I assist with lesson planning, question generation, or feedback drafting today?
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Input Area -->
+                    <form id="chatbot-form-teacher" class="p-4 border-t border-gray-200 flex space-x-3">
+                        <input type="text" id="chatbot-input-teacher" placeholder="Generate 5 quiz questions for Chapter 5..." required
+                               class="flex-grow p-3 rounded-xl border border-gray-300 focus:ring-indigo-500 focus:border-indigo-500">
+                        <button type="submit" class="p-3 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14M12 5l7 7-7 7"></path></svg>
+                        </button>
+                    </form>
+                </div>
+            </section>
+
+
+            <!-- 8. Profile & Settings -->
+            <section id="settings" class="hidden active-section">
+                <h3 class="text-3xl font-extrabold text-gray-800 mb-6">⚙️ Profile & Settings</h3>
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    
+                    <!-- Column 1: Profile Card -->
+                    <div class="content-card lg:col-span-1 bg-white p-6 rounded-2xl shadow-lg text-center">
+                        <img src="https://placehold.co/100x100/6366f1/ffffff?text=MS" alt="Ms. Sharma Profile" class="w-24 h-24 rounded-full object-cover mx-auto border-4 border-indigo-300 mb-4">
+                        <h4 class="text-xl font-bold text-gray-800">Ms. R. Sharma</h4>
+                        <p class="text-sm text-indigo-600 font-medium">Teacher (Mathematics)</p>
+                        
+                        <div class="mt-4 pt-4 border-t border-gray-100 text-left space-y-2">
+                            <p class="text-sm"><span class="font-semibold text-gray-600">Employee ID:</span> T-7890</p>
+                            <p class="text-sm"><span class="font-semibold text-gray-600">Email:</span> r.sharma@edusync.edu</p>
+                            <button class="w-full mt-4 py-2 text-sm bg-indigo-50 text-indigo-600 rounded-xl hover:bg-indigo-100 transition">
+                                Update Profile Photo
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Column 2 & 3: Account Settings & Preferences -->
+                    <div class="lg:col-span-2 space-y-6">
+                        <!-- Account Settings & Security -->
+                        <div class="content-card bg-white p-8 rounded-2xl shadow-lg">
+                            <h4 class="text-2xl font-semibold text-gray-700 mb-6 border-b pb-2">Account & Security</h4>
+
+                            <form class="space-y-5">
+                                <div class="grid sm:grid-cols-2 gap-4">
+                                    <div>
+                                        <label for="fullName" class="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
+                                        <input type="text" id="fullName" value="Ms. R. Sharma" 
+                                               class="w-full p-3 rounded-xl border border-gray-300 focus:ring-indigo-500 focus:border-indigo-500">
+                                    </div>
+                                    <div>
+                                        <label for="emailUpdate" class="block text-sm font-medium text-gray-700 mb-1">Email (Read Only)</label>
+                                        <input type="email" id="emailUpdate" value="r.sharma@edusync.edu" disabled 
+                                               class="w-full p-3 rounded-xl border border-gray-200 bg-gray-50 cursor-not-allowed">
+                                    </div>
+                                </div>
+                                
+                                <!-- Password Change (Mock) -->
+                                <div class="pt-4 border-t border-gray-100">
+                                    <label for="newPassword" class="block text-sm font-medium text-gray-700 mb-1">New Password</label>
+                                    <input type="password" id="newPassword" placeholder="Enter new password (min 8 chars)" 
+                                           class="w-full p-3 rounded-xl border border-gray-300 focus:ring-indigo-500 focus:border-indigo-500">
+                                    <p class="text-xs text-gray-500 mt-1">Leave blank to keep current password.</p>
+                                </div>
+
+                                <button type="submit" onclick="alert('Profile Saved! (Mock)')" class="px-6 py-3 bg-indigo-600 text-white font-semibold rounded-xl hover:bg-indigo-700 transition">
+                                    Save Profile Changes
+                                </button>
+                            </form>
+                        </div>
+
+                        <!-- App Preferences -->
+                        <div class="content-card bg-white p-8 rounded-2xl shadow-lg">
+                            <h4 class="text-2xl font-semibold text-gray-700 mb-6 border-b pb-2">App Preferences</h4>
+
+                            <div class="space-y-4">
+                                <!-- Theme Toggle -->
+                                <div class="flex justify-between items-center py-2 border-b border-gray-100">
+                                    <p class="font-medium text-gray-700">Dark/Light Mode Theme</p>
+                                    <label for="theme-toggle-settings" class="flex items-center cursor-pointer">
+                                        <div class="relative">
+                                            <input type="checkbox" id="theme-toggle-settings" class="sr-only">
+                                            <div class="dot-bg block bg-gray-600 w-14 h-8 rounded-full transition duration-300"></div>
+                                            <div class="dot absolute left-1 top-1 bg-white w-6 h-6 rounded-full transition duration-300"></div>
+                                        </div>
+                                        <span class="ml-3 text-sm text-gray-600" id="theme-status">Light</span>
+                                    </label>
+                                </div>
+
+                                <!-- Notification Toggle -->
+                                <div class="flex justify-between items-center py-2">
+                                    <p class="font-medium text-gray-700">Email Notifications for New Submissions</p>
+                                    <label for="email-notify" class="flex items-center cursor-pointer">
+                                        <div class="relative">
+                                            <input type="checkbox" id="email-notify" class="hidden toggle-checkbox" checked>
+                                            <div class="toggle-label block bg-gray-200 w-14 h-8 rounded-full shadow-inner transition duration-300"></div>
+                                            <div class="toggle-checkbox absolute left-1 top-1 bg-white w-6 h-6 rounded-full shadow transition duration-300"></div>
+                                        </div>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+
+        </main>
+        
+        <!-- Footer (Optional PWA banner and Copyright) -->
+        <footer id="dashboard-footer" class="p-4 bg-white border-t border-gray-200 text-center text-xs text-gray-500 mt-auto transition-colors duration-300">
+            <div class="flex justify-center space-x-4 mb-2">
+                <a href="#" class="hover:underline">Privacy Policy</a>
+                <a href="#" class="hover:underline">Terms of Use</a>
+            </div>
+            &copy; EduSync AI 2025. All rights reserved.
+        </footer>
+    </div>
+
+    <!-- JavaScript for Dynamic Functionality and Mocks -->
+    <script>
+        const statusIndicator = document.getElementById('status-indicator');
+        const currentDatetime = document.getElementById('current-datetime');
+        const sidebar = document.getElementById('sidebar');
+        const mobileBackdrop = document.getElementById('mobile-sidebar-backdrop');
+        const activeSections = document.querySelectorAll('.active-section');
+        const sidebarLinks = document.querySelectorAll('.sidebar-link');
+        const themeToggle = document.getElementById('theme-toggle'); // Hidden toggle used for state
+        const themeToggleSettings = document.getElementById('theme-toggle-settings'); // Settings UI toggle
+        const themeStatus = document.getElementById('theme-status');
+        const dashboardHeader = document.getElementById('dashboard-header');
+        const dashboardFooter = document.getElementById('dashboard-footer');
+        const contentCards = document.querySelectorAll('.content-card');
+        const notifButton = document.getElementById('notif-button');
+        const chartMocks = [document.getElementById('chart-mock-1'), document.getElementById('chart-mock-2')].filter(Boolean);
+        
+        // Teacher-specific elements
+        const attendanceTableBody = document.querySelector('#attendance-table tbody');
+        const attendanceSummary = document.getElementById('attendance-summary');
+        const teacherChatbotHistory = document.getElementById('chatbot-history-teacher');
+        const teacherInitialBotMessage = document.getElementById('initial-bot-message-teacher');
+
+        // Attendance Data (MOCK)
+        const studentList = [
+            { roll: '001', name: 'Aarav Patel', status: 'P' },
+            { roll: '002', name: 'Alia Bhatt', status: 'P' },
+            { roll: '003', name: 'Gopal Singh', status: 'A' },
+            { roll: '004', name: 'Krutika Chincholkar', status: 'P' },
+            { roll: '005', name: 'Priya Reddy', status: 'P' },
+            { roll: '006', name: 'Zoya Khan', status: 'A' },
+            { roll: '007', name: 'Rohit Verma', status: 'P' },
+            { roll: '008', name: 'Sana Khan', status: 'P' },
+            { roll: '009', name: 'Deepak Rao', status: 'L' },
+            { roll: '010', name: 'Nisha Singh', status: 'P' },
+        ];
+
+
+        // --- Core Functions ---
+
+        function updateDateTime() {
+            const now = new Date();
+            const dateStr = now.toLocaleDateString('en-US', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' });
+            const timeStr = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+            if (currentDatetime) {
+                currentDatetime.textContent = `${dateStr} | ${timeStr}`;
+            }
+        }
+
+        /**
+         * Checks and updates the online/offline status indicator.
+         */
+        function checkOnlineStatus() {
+            const isOnline = navigator.onLine;
+            let dotColor = 'bg-red-500';
+            let statusText = 'Offline';
+            const isDark = localStorage.getItem('edusync-theme') === 'dark';
+
+            if (isOnline) {
+                dotColor = 'bg-green-500';
+                statusText = 'Online';
+            } else {
+                statusText = 'Offline (Changes will sync)';
+            }
+
+            // The text color needs to adapt to the header background
+            const textColorClass = isDark ? 'text-gray-300' : 'text-gray-600';
+
+            statusIndicator.innerHTML = `
+                <span class="w-3 h-3 ${dotColor} rounded-full mr-2 shadow-md ring-2 ring-white"></span>
+                <span class="${textColorClass}">${statusText}</span>
+            `;
+
+            // Display a message in the main content if offline
+            if (!isOnline) {
+                 let offlineMessage = document.querySelector('.offline-banner');
+                 if (!offlineMessage) {
+                    offlineMessage = document.createElement('div');
+                    offlineMessage.className = "fixed bottom-0 left-0 right-0 p-3 bg-red-600 text-white text-center font-medium shadow-2xl z-50 offline-banner";
+                    offlineMessage.textContent = "⚠️ You are offline. Your changes will be saved locally and synced when you reconnect.";
+                    document.body.appendChild(offlineMessage);
+                 }
+            } else {
+                const existingMessage = document.querySelector('.offline-banner');
+                if (existingMessage) existingMessage.remove();
+            }
+        }
+
+        /**
+         * Toggles the sidebar visibility for mobile.
+         */
+        function toggleSidebar() {
+            sidebar.classList.toggle('-translate-x-full');
+            mobileBackdrop.classList.toggle('hidden');
+        }
+        
+        /**
+         * Handles navigation to show the selected main content section.
+         * @param {string} sectionId - The ID of the section to show.
+         */
+        function showSection(sectionId) {
+            // Hide all sections
+            activeSections.forEach(section => section.classList.add('hidden'));
+            
+            // Show the selected section
+            const targetSection = document.getElementById(sectionId);
+            if (targetSection) {
+                targetSection.classList.remove('hidden');
+            }
+
+            // Update active sidebar link
+            sidebarLinks.forEach(link => {
+                link.classList.remove('active', 'dark-active');
+                if (link.getAttribute('href').substring(1) === sectionId) {
+                    link.classList.add('active');
+                    // Ensure dark mode active class is applied if theme is dark
+                    if (localStorage.getItem('edusync-theme') === 'dark') {
+                        link.classList.add('dark-active');
+                    }
+                }
+            });
+
+            // If navigating to attendance, render the table
+            if (sectionId === 'attendance') {
+                renderAttendanceTable();
+            }
+
+            // Hide sidebar on mobile after selection
+            if (!mobileBackdrop.classList.contains('hidden')) {
+                toggleSidebar();
+            }
+        }
+
+
+        function handleLogout() {
+            console.log("Logged out. Simulating redirect to login page.");
+            document.body.innerHTML = '<div class="flex items-center justify-center min-h-screen text-xl font-semibold text-gray-700">Logging out...</div>';
+            localStorage.removeItem('edusync-offline-session'); 
+            window.location.href = 'login.html';
+        }
+
+
+        // --- Teacher-Specific Functions ---
+
+        /**
+         * Renders the attendance table based on the studentList data.
+         */
+        function renderAttendanceTable() {
+            if (!attendanceTableBody) return;
+            attendanceTableBody.innerHTML = '';
+            
+            let presentCount = 0;
+            let absentCount = 0;
+            let lateCount = 0;
+            const isDark = localStorage.getItem('edusync-theme') === 'dark';
+
+            studentList.forEach(student => {
+                let statusClass = '';
+                let statusText = '';
+                
+                if (student.status === 'P') {
+                    presentCount++;
+                    statusText = 'Present';
+                    statusClass = isDark ? 'bg-green-900 text-green-300' : 'bg-green-100 text-green-700';
+                } else if (student.status === 'L') {
+                    lateCount++;
+                    statusText = 'Late';
+                    statusClass = isDark ? 'bg-yellow-900 text-yellow-300' : 'bg-yellow-100 text-yellow-700';
+                } else { // 'A'
+                    absentCount++;
+                    statusText = 'Absent';
+                    statusClass = isDark ? 'bg-red-900 text-red-300' : 'bg-red-100 text-red-700';
+                }
+                
+                const rowClass = isDark ? 'bg-gray-700/50 text-gray-100 border-gray-600' : 'bg-white border-gray-200';
+                const textClass = isDark ? 'text-gray-100' : 'text-gray-900';
+                const grayTextClass = isDark ? 'text-gray-300' : 'text-gray-700';
+
+
+                const row = document.createElement('tr');
+                row.className = rowClass;
+                row.innerHTML = `
+                    <td class="px-3 py-3 whitespace-nowrap text-sm font-medium ${textClass} roll-no">${student.roll}</td>
+                    <td class="px-3 py-3 whitespace-nowrap text-sm ${textClass} student-name">${student.name}</td>
+                    <td class="px-3 py-3 whitespace-nowrap text-sm status-cell">
+                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${statusClass} status-badge">
+                            ${statusText}
+                        </span>
+                    </td>
+                    <td class="px-3 py-3 whitespace-nowrap text-sm space-x-2">
+                        <button onclick="markAttendance('${student.roll}', 'P')" class="text-xs px-2 py-1 rounded bg-green-500 text-white hover:bg-green-600 status-btn-p">P</button>
+                        <button onclick="markAttendance('${student.roll}', 'A')" class="text-xs px-2 py-1 rounded bg-red-500 text-white hover:bg-red-600 status-btn-a">A</button>
+                        <button onclick="markAttendance('${student.roll}', 'L')" class="text-xs px-2 py-1 rounded bg-yellow-500 text-white hover:bg-yellow-600 status-btn-l">L</button>
+                    </td>
+                `;
+                attendanceTableBody.appendChild(row);
+            });
+
+            if (attendanceSummary) {
+                 attendanceSummary.textContent = `Summary: ${presentCount} Present / ${absentCount} Absent / ${lateCount} Late`;
+            }
+        }
+
+        /**
+         * Updates a student's attendance status.
+         */
+        function markAttendance(roll, status) {
+            const student = studentList.find(s => s.roll === roll);
+            if (student) {
+                student.status = status;
+                // Simple re-render to update the display
+                renderAttendanceTable();
+                console.log(`Attendance marked for ${student.name}: ${status}. Saved locally (simulated).`);
+            }
+        }
+        
+        /**
+         * Marks all students as 'Present' or resets to 'Absent'.
+         */
+        function markAll(status) {
+            studentList.forEach(student => {
+                if (status === 'P') {
+                    student.status = 'P';
+                } else if (status === 'A') {
+                    student.status = 'A';
+                }
+            });
+            renderAttendanceTable();
+            console.log(`All students marked as: ${status}.`);
+        }
+        
+        /**
+         * Mocks the AI Auto-Grading process for a specific student submission.
+         */
+        function mockAIGrade(buttonElement) {
+            const row = buttonElement.closest('tr');
+            const studentName = row.querySelector('.student-name').textContent;
+            const aiGradeCell = row.querySelector('.text-yellow-600, .text-green-600, .text-red-600');
+            
+            aiGradeCell.textContent = '...Grading';
+            
+            setTimeout(() => {
+                const grade = Math.floor(Math.random() * 20) + 75; // 75% to 95%
+                aiGradeCell.textContent = `${grade}%`;
+                aiGradeCell.classList.remove('text-yellow-600', 'text-red-600');
+                aiGradeCell.classList.add('text-green-600');
+                
+                buttonElement.textContent = 'Review';
+                buttonElement.classList.remove('text-green-600', 'hover:text-green-800');
+                buttonElement.classList.add('text-indigo-600', 'hover:text-indigo-800');
+                
+                console.log(`AI grading complete for ${studentName}: ${grade}%`);
+            }, 1500);
+        }
+
+        /**
+         * Mocks AI Generating Assignment Questions.
+         */
+        function mockAIGenerateAssignment() {
+            const instructions = document.querySelector('#assignments textarea');
+            instructions.value = "🤖 AI Generated Questions:\n\n1. Solve for x in the quadratic equation $3x^2 - 5x + 2 = 0$. (5 marks)\n2. Explain the significance of the discriminant in determining the nature of the roots. (4 marks)\n3. Draft a word problem that results in the equation $x^2 + 7x + 12 = 0$. (6 marks)\n\n---\nReview and adjust before posting.";
+            console.log("AI generated mock questions for assignment.");
+        }
+        
+        /**
+         * Mocks AI Drafting Polite Announcement.
+         */
+        function mockAIGenerateMessage() {
+            const announcementInput = document.getElementById('announcement-input');
+            announcementInput.value = "Dear Grade 10 Students,\n\nThis is a polite reminder that the deadline for the Quadratic Equations assignment is tomorrow at 5:00 PM. Please ensure your submission is finalized and uploaded to the Assignments Manager before the cut-off time. Late submissions will incur a penalty. Reach out if you face any technical difficulties.\n\nThank you,\nMs. Sharma";
+            console.log("AI drafted a polite reminder message.");
+        }
+
+
+        // --- Theme Toggle Logic (Integrated into the main logic) ---
+
+        function applyTheme(isDark) {
+            // Use local storage to persist the theme choice
+            localStorage.setItem('edusync-theme', isDark ? 'dark' : 'light');
+
+            document.body.classList.toggle('dark', isDark);
+            
+            // Sync the two theme toggles (hidden master and visible settings toggle)
+            if (themeToggle) themeToggle.checked = isDark;
+            if (themeToggleSettings) themeToggleSettings.checked = isDark;
+
+            // Re-apply active class for sidebar consistency
+            const activeLink = document.querySelector('.sidebar-link.active');
+            if (activeLink) {
+                activeLink.classList.toggle('dark-active', isDark);
+            }
+            themeStatus.textContent = isDark ? "Dark" : "Light";
+            
+            // Sync Settings Page Toggle Dot
+            const dot = document.querySelector('#settings .dot');
+            if (dot) {
+                dot.classList.toggle('translate-x-6', isDark);
+            }
+
+            // Sync EduBot initial message color
+            if (teacherInitialBotMessage) {
+                 teacherInitialBotMessage.classList.toggle('bg-indigo-800', isDark);
+                 teacherInitialBotMessage.classList.toggle('text-indigo-100', isDark);
+                 teacherInitialBotMessage.classList.toggle('bg-indigo-100', !isDark);
+                 teacherInitialBotMessage.classList.toggle('text-indigo-900', !isDark);
+            }
+
+            // A simple way to trigger the full style update (Attendance table needs this)
+            checkOnlineStatus();
+            if (!document.getElementById('attendance').classList.contains('hidden')) {
+                 renderAttendanceTable();
+            }
+
+            // Dispatch a change event on the hidden master toggle to trigger the main dark mode handler function
+            themeToggle.dispatchEvent(new Event('change', { bubbles: true }));
+        }
+
+        // --- Initial Load ---
+        window.onload = function() {
+            // FIX: Start clock safely after DOM is ready
+            updateDateTime();
+            setInterval(updateDateTime, 1000); 
+
+            checkOnlineStatus();
+            window.addEventListener('online', checkOnlineStatus);
+            window.addEventListener('offline', checkOnlineStatus);
+
+            const storedTheme = localStorage.getItem('edusync-theme');
+            if (storedTheme === 'dark') {
+                applyTheme(true);
+            } else {
+                 // Ensure light mode is correctly applied on load
+                 applyTheme(false);
+            }
+            
+            // Add event listener for the Settings Page toggle
+            if (themeToggleSettings) {
+                themeToggleSettings.checked = storedTheme === 'dark';
+                themeToggleSettings.addEventListener('change', (e) => {
+                    applyTheme(e.target.checked);
+                });
+            }
+
+            showSection('overview');
+
+            sidebarLinks.forEach(link => {
+                link.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const sectionId = link.getAttribute('href').substring(1);
+                    showSection(sectionId);
+                });
+            });
+            
+            // Set up teacher EduBot form handler
+            const teacherChatForm = document.getElementById('chatbot-form-teacher');
+            if (teacherChatForm) {
+                 teacherChatForm.addEventListener('submit', (e) => {
+                     e.preventDefault();
+                     const message = document.getElementById('chatbot-input-teacher').value.trim();
+                     if (!message) return;
+
+                     // 1. Display User Message
+                     const userMsgEl = document.createElement('div');
+                     userMsgEl.className = 'flex justify-end';
+                     const isDark = localStorage.getItem('edusync-theme') === 'dark';
+                     const userBgClass = isDark ? 'bg-indigo-700' : 'bg-indigo-600';
+
+                     userMsgEl.innerHTML = `<div class="${userBgClass} text-white p-3 rounded-xl rounded-br-none max-w-xs md:max-w-md shadow-md">${message}</div>`;
+                     teacherChatbotHistory.appendChild(userMsgEl);
+                     teacherChatbotHistory.scrollTop = teacherChatbotHistory.scrollHeight;
+                     document.getElementById('chatbot-input-teacher').value = '';
+
+                     // 2. Simulate Bot Response
+                     setTimeout(() => {
+                         const botMsgEl = document.createElement('div');
+                         botMsgEl.className = 'flex justify-start';
+                         
+                         let botResponse = '';
+                         if (message.toLowerCase().includes('quiz') || message.toLowerCase().includes('question')) {
+                             botResponse = "Generating 5 differentiated quiz questions for Chapter 5: Exponents. Questions ready for review in the 'Assignments Manager' creation form.";
+                         } else if (message.toLowerCase().includes('strategy') || message.toLowerCase().includes('engage')) {
+                             botResponse = "I suggest a 'Gamified Review Day' for the upcoming test. Ideas: Use online flashcards or a class-wide Math Kahoot!";
+                         } else if (message.toLowerCase().includes('summarize')) {
+                             botResponse = "Summary generated: Key teaching points for the Trigonometry lesson emphasize SOH CAH TOA and the unit circle. Focus on practical applications.";
+                         } else {
+                             botResponse = "Understood. Searching curriculum resources... (Mock Response: Please specify a task, e.g., 'Draft announcement' or 'Suggest remedial strategy').";
+                         }
+
+                         const botClass = isDark ? 'bg-indigo-800 text-indigo-100' : 'bg-indigo-100 text-indigo-900';
+
+                         botMsgEl.innerHTML = `<div class="${botClass} p-3 rounded-xl rounded-tl-none max-w-xs md:max-w-md shadow-sm">${botResponse}</div>`;
+                         teacherChatbotHistory.appendChild(botMsgEl);
+                         teacherChatbotHistory.scrollTop = teacherChatbotHistory.scrollHeight;
+                     }, 1500);
+                 });
+            }
+        };
+    </script>
+</body>
+</html>
